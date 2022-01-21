@@ -19,6 +19,7 @@ require (
 	github.com/gookit/color v1.3.1
 	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.21.8+incompatible
 	github.com/jordan-wright/email v0.0.0-20200824153738-3f5bafa1cd84
+	github.com/lib/pq v1.10.4 // indirect
 	github.com/mojocn/base64Captcha v1.3.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
@@ -26,6 +27,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil v3.21.9+incompatible
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/songzhibin97/gkit v1.1.1
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
