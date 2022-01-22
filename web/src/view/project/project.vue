@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-v-for-template-key */
 <template>
   <div>
     <div class="gva-search-box">
@@ -85,67 +86,178 @@
       <el-table
         v-if="tableData.length > 0"
         ref="multipleTable"
+        :default-sort="{ prop: 'createdDate', order: 'descending' }"
         style="width: 100%"
         tooltip-effect="dark"
         :data="tableData"
         row-key="ID"
+        show-summary
+        :summary-method="getSummries"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column align="center" label="创建日期" width="180">
+        <!-- 项目名称 左固定 -->
+        <el-table-column
+          align="center"
+          label="项目名称"
+          prop="name"
+          fixed="left"
+          width="200"
+          :show-overflow-tooltip="true"
+        />
+        <!-- 备案申请日期 -->
+        <el-table-column
+          align="center"
+          label="备案申请日期"
+          width="150"
+          sortable
+          prop="createdDate"
+        >
           <template #default="scope">{{
-            formatDate(scope.row.createdDate)
+            formatTableVal(scope.row.createdDate, 'date')
           }}</template>
         </el-table-column>
         // todo clp
-        <template v-for="(col, index) in tableCols" :key="index">
+        <template v-for="col in tableCols">
           <!-- multi -->
           <template v-if="col.type === 'multi'">
-            <template
-              v-for="(dataItem, dataIndex) in tableData[0][col.prop]"
-              :key="dataIndex"
-            >
-              <template v-for="(s, subIndex) in col.sub" :key="subIndex">
-                <el-table-column
-                  :prop="s.prop"
-                  :label="s.label"
-                  align="center"
-                  show-overflow-tooltip
-                  width="120"
+            <el-table-column :key="col.label" :label="col.label" align="center">
+              <template
+                v-for="(dataItem, dataIndex) in tableData[col.maxLengthIndex][
+                  col.prop
+                ]"
+              >
+                <template
+                  v-for="s in col.sub"
+                  :key="col.label + '-' + dataIndex + '-' + s.label"
                 >
-                  <!-- <template #default="scope">{{
-                    valFormat(scope.row[col.prop][dataIndex][s.prop], s.format)
-                  }}</template> -->
-                  <template #default="scope">{{
-                    scope.row[col.prop][dataIndex][s.prop]
-                  }}</template>
-                </el-table-column>
+                  <el-table-column
+                    v-if="s.show"
+                    :prop="s.prop"
+                    :label="s.label"
+                    align="center"
+                    show-overflow-tooltip
+                    :width="s.width"
+                  >
+                    <template #default="scope">
+                      <span>
+                        {{
+                          formatTableVal(
+                            scope.row[col.prop][dataIndex][s.prop],
+                            s.format
+                          )
+                        }}
+                      </span>
+                    </template>
+                  </el-table-column>
+                </template>
               </template>
-            </template>
+            </el-table-column>
+          </template>
+          <template v-else-if="col.type === 'group'">
+            <el-table-column
+              v-if="col.show"
+              :key="col.label"
+              align="center"
+              :label="col.label"
+            >
+              <el-table-column
+                v-for="s in col.sub"
+                :key="col.label + '-' + s.label"
+                :label="s.label"
+                :prop="s.prop"
+                align="center"
+                show-overflow-tooltip
+                :width="s.width"
+              >
+                <template #default="scope">
+                  <span>
+                    {{ formatTableVal(scope.row[s.prop], s.format) }}
+                  </span>
+                </template>
+              </el-table-column>
+            </el-table-column>
           </template>
           <!-- 其他的正常渲染 -->
           <template v-else>
             <el-table-column
+              v-if="col.show"
+              :key="col.label"
               :prop="col.prop"
               :label="col.label"
               align="center"
-              show-overflow-tooltip
-              width="150"
+              :show-overflow-tooltip="true"
+              :width="col.width"
             >
               <template #default="scope">
-                <!-- 正常显示，row为当前某一行的数据对象，col.prop为数据对象的某个属性， scope.row[col.prop]为某行某列的一个值-->
                 <!-- todo format -->
-                <!-- <span>
-                  {{ valFormat(scope.row[col.prop], col.format) }}
-                </span> -->
                 <span>
-                  {{ scope.row[col.prop] }}
+                  {{ formatTableVal(scope.row[col.prop], col.format) }}
                 </span>
               </template>
             </el-table-column>
           </template>
         </template>
-        <el-table-column align="center" label="按钮组">
+        <!-- 查看项目的预算和支出 -->
+        <el-table-column
+          align="center"
+          label="预算和支出"
+          fixed="right"
+          width="100"
+        >
+          <template #default="parentScope">
+            <el-popover
+              placement="top-start"
+              :width="500"
+              trigger="hover"
+              border
+            >
+              <template #reference>
+                <el-button
+                  size="small"
+                  class="table-button"
+                  type="text"
+                  icon="view"
+                >查看</el-button>
+              </template>
+              <el-table
+                :data="parentScope.row.incomeAndOutcome"
+                border
+                :summary-method="getIncomeAndOutcomBias"
+                show-summary
+              >
+                <el-table-column
+                  type="index"
+                  :index="indexMethod"
+                  width="50"
+                  align="center"
+                />
+                <!-- todo 再创建一个模板，注意prop -->
+                <el-table-column
+                  v-for="col in incomeAndOutcomeCols"
+                  :key="col.label"
+                  :prop="col.prop"
+                  :label="col.label"
+                  :width="col.width"
+                  align="center"
+                >
+                  <template #default="scope">
+                    <!-- todo format -->
+                    <span>
+                      {{ formatTableVal(scope.row[col.prop], col.format) }}
+                    </span>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-popover>
+          </template>
+        </el-table-column>
+        <el-table-column
+          align="center"
+          label="按钮组"
+          fixed="right"
+          width="200"
+        >
           <template #default="scope">
             <el-button
               type="text"
@@ -334,7 +446,7 @@
         </el-form-item>
         <el-form-item label="预算和支出（根据项目对应的收入和支出流水汇总）:">
           <el-input
-            v-model="formData.incomeAndOutput"
+            v-model="formData.incomeAndOutcome"
             clearable
             placeholder="请输入"
           />
@@ -374,12 +486,7 @@ import {
 } from '@/api/project'
 
 // 全量引入格式化工具 请按需保留
-import {
-  getDictFunc,
-  formatDate,
-  formatBoolean,
-  filterDict,
-} from '@/utils/format'
+import { formatTableVal } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 
@@ -403,9 +510,9 @@ const formData = ref({
   trainEndDate: new Date(),
   trainNumOfPerson: 0,
   trainTime: 0,
-  client: {},
-  landingAgency: {},
-  partners: {},
+  client: [{ name: '', radio: 0, amount: 0 }],
+  landingAgency: [{ name: '', radio: 0, amount: 0 }],
+  partners: [{ name: '', radio: 0, amount: 0 }],
   sAmount: 0,
   dAmount: 0,
   wAmount: 0,
@@ -414,7 +521,40 @@ const formData = ref({
   dRadio: 0,
   wRadio: 0,
   cRadio: 0,
-  incomeAndOutput: '',
+  incomeAndOutcome: [
+    {
+      pg: 0.0,
+      ph: 0.0,
+      pi: 0.0,
+      pj: 0.0,
+      pk: 0.0,
+      pl: 0.0,
+      pm: 0.0,
+      pn: 0.0,
+      po: 0.0,
+      pp: 0.0,
+      pq: 0.0,
+      pr: 0.0,
+      ps: 0.0,
+      pt: 0.0,
+    },
+    {
+      pg: 0.0,
+      ph: 0.0,
+      pi: 0.0,
+      pj: 0.0,
+      pk: 0.0,
+      pl: 0.0,
+      pm: 0.0,
+      pn: 0.0,
+      po: 0.0,
+      pp: 0.0,
+      pq: 0.0,
+      pr: 0.0,
+      ps: 0.0,
+      pt: 0.0,
+    },
+  ],
   remark: '',
 })
 
@@ -424,93 +564,353 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const tableCols = ref([
-  { prop: 'name', label: '项目名称', isShow: true },
-  { prop: 'categories', label: '项目类别', isShow: true },
-  { prop: 'projectNum', label: '项目码', isShow: true },
-  { prop: 'manager', label: '项目负责人', isShow: true },
-  { prop: 'area', label: '所属地', isShow: true },
-  { prop: 'trainMode', label: '培训模式', isShow: true },
-  { prop: 'chargeStandard', label: '收费标准', isShow: true },
-  { prop: 'trainTime', label: '学时数', isShow: true },
-  { prop: 'trainNumOfPerson', label: '培训人数', isShow: true },
+  { prop: 'categories', label: '项目类别', show: true, width: 100 },
+  { prop: 'projectNum', label: '项目码', show: true, width: 100 },
+  { prop: 'manager', label: '项目负责人', show: true, width: 100 },
+  { prop: 'area', label: '所属地', show: true, width: 100 },
+  { prop: 'trainMode', label: '培训模式', show: true, width: 100 },
+  { prop: 'chargeStandard', label: '收费标准', show: true, width: 100 },
+  { prop: 'trainTime', label: '学时数', show: true, width: 100 },
+  { prop: 'trainNumOfPerson', label: '培训人数', show: true, width: 100 },
   {
     prop: 'trainStartDate',
     label: '培训开始时间',
-    isShow: true,
+    show: true,
     format: 'date',
+    width: 120,
   },
-  { prop: 'trainEndDate', label: '培训结束时间', isShow: true, format: 'date' },
+  {
+    prop: 'trainEndDate',
+    label: '培训结束时间',
+    show: true,
+    format: 'date',
+    width: 120,
+  },
   {
     prop: 'contractStartDate',
     label: '合同开始时间',
-    isShow: true,
+    show: true,
     format: 'date',
+    width: 120,
   },
   {
     prop: 'contractEndDate',
     label: '合同结束时间',
-    isShow: true,
+    show: true,
     format: 'date',
+    width: 120,
   },
   {
-    prop: 'projectFund',
+    prop: 'projectAmount',
     label: '项目应收费用',
-    isShow: true,
+    show: true,
     format: 'amount',
+    width: 150,
   },
-  { prop: 'paidAmount', label: '已到账费用', isShow: true, format: 'amount' },
+  {
+    prop: 'paidAmount',
+    label: '已到账费用',
+    show: true,
+    format: 'amount',
+    width: 150,
+  },
   {
     prop: 'unpaidAmount',
     label: '未到账金额',
-    isShow: true,
+    show: true,
     format: 'amount',
+    width: 150,
   },
   {
     prop: 'client',
     type: 'multi',
+    label: '委托方',
     maxLengthIndex: 0,
     sub: [
-      { prop: 'name', label: '委托方', isShow: true },
-      { prop: 'radio', label: '委托方分成比例', format: 'radio', isShow: true },
-      { prop: 'amount', label: '委托方分成', format: 'amount', isShow: true },
+      { prop: 'name', label: '名称', show: true, width: 150 },
+      {
+        prop: 'radio',
+        label: '分成比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'amount',
+        label: '分成',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
     ],
   },
   {
     prop: 'landingAgency',
     type: 'multi',
+    label: '落地方',
     maxLengthIndex: 0,
     sub: [
-      { prop: 'name', label: '落地方', isShow: true },
-      { prop: 'radio', label: '落地方分成比例', format: 'radio', isShow: true },
-      { prop: 'amount', label: '落地方分成', format: 'amount', isShow: true },
+      { prop: 'name', label: '名称', show: true, width: 150 },
+      {
+        prop: 'radio',
+        label: '分成比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'amount',
+        label: '分成',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
     ],
   },
   {
-    prop: 'partners',
+    prop: 'partner',
+    label: '技术方',
     type: 'multi',
     maxLengthIndex: 0,
     sub: [
-      { prop: 'name', label: '技术方', isShow: true },
-      { prop: 'radio', label: '技术方分成比例', format: 'radio', isShow: true },
-      { prop: 'amount', label: '技术方分成', format: 'amount', isShow: true },
+      { prop: 'name', label: '名称', show: true, width: 150 },
+      {
+        prop: 'radio',
+        label: '分成比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'amount',
+        label: '分成',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
     ],
   },
   {
-    prop: 'sRadio',
-    label: '学校管理费比例',
-    format: 'radio',
-    isShow: true,
+    label: '学校管理费180043',
+    show: true,
+    type: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
   },
-  { prop: 'sAmount', label: '学校管理费', format: 'amount', isShow: true },
-  { prop: 'dRadio', label: '发展基金比例', format: 'radio', isShow: true },
-  { prop: 'dAmount', label: '发展基金', format: 'amount', isShow: true },
-  { prop: 'wRadio', label: '福利比例', format: 'radio', isShow: true },
-  { prop: 'wAmount', label: '福利', format: 'amount', isShow: true },
-  { prop: 'cRadio', label: '课酬比例', format: 'radio', isShow: true },
-  { prop: 'cAmount', label: '课酬', format: 'amount', isShow: true },
-  { prop: 'remark', label: '备注', isShow: true },
+  {
+    label: '发展基金210098',
+    show: true,
+    type: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  {
+    label: '福利220121',
+    show: true,
+    type: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  {
+    label: '课酬440120',
+    show: true,
+    type: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  { prop: 'remark', label: '备注', show: true, width: 100 },
+])
+const incomeAndOutcomeCols = ref([
+  { prop: 'pg', label: '专家课酬', format: 'amount', width: 120 },
+  { prop: 'ph', label: '方案费', format: 'amount', width: 120 },
+  { prop: 'pi', label: '网络研修教学费', format: 'amount', width: 120 },
+  { prop: 'pj', label: '管理及工作人员劳务费', format: 'amount', width: 120 },
+  { prop: 'pk', label: '考察、跟岗、线下指导费', format: 'amount', width: 120 },
+  { prop: 'pl', label: '专家食宿', format: 'amount', width: 120 },
+  { prop: 'pm', label: '专家及工作人员交通费', format: 'amount', width: 120 },
+  { prop: 'pn', label: '学员伙食费', format: 'amount', width: 120 },
+  { prop: 'po', label: '学员住宿费', format: 'amount', width: 120 },
+  { prop: 'pp', label: '学员交通费', format: 'amount', width: 120 },
+  { prop: 'pq', label: '场租', format: 'amount', width: 120 },
+  {
+    prop: 'pr',
+    label: '课程资源建设费(人员支出)',
+    format: 'amount',
+    width: 120,
+  },
+  { prop: 'ps', label: '课程资源建设费(购买)', format: 'amount', width: 120 },
+  {
+    prop: 'pt',
+    label:
+      '培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)',
+    format: 'amount',
+    width: 200,
+  },
 ])
 const searchInfo = ref({})
+
+// 预算和支出的索引
+const indexMethod = (index) => {
+  switch (index) {
+    case 0:
+      return '预算'
+    case 1:
+      return '支出'
+    default:
+      return index
+  }
+}
+
+// 计算对应预算和支出的差
+const getIncomeAndOutcomBias = (param) => {
+  const { columns, data } = param
+  const sums = []
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '差值'
+      return
+    }
+    // 每一列，转成number类型
+    const values = data.map((item) => Number(item[column.property]))
+    // 里面的每个数都是number，则
+    if (!values.every((value) => isNaN(value))) {
+      sums[index] = formatTableVal(values[0] - values[1], 'amount')
+    } else {
+      sums[index] = 'N/A'
+    }
+  })
+
+  return sums
+}
+const getSummries = (param) => {
+  const { columns, data } = param
+  const sums = []
+  let index = 0
+  tableCols.value.forEach((col) => {
+    // multi
+    if (col.type === 'multi' || col.type === 'group') {
+      // todo 1 is maxSubItemNum
+      const maxSubItemNum = col.type === 'group' ? 1 : 1
+      for (let i = 0; i < maxSubItemNum; i++) {
+        try {
+          col.sub.forEach((s) => {
+            if (s.show) {
+              // val
+              const values = data.map((item) => {
+                const tmp =
+                  col.type === 'multi'
+                    ? item[col.prop][i][s.prop]
+                    : item[s.prop]
+                return tmp === undefined ? NaN : tmp
+              })
+              // 都是number，且是amount格式
+              if (
+                !values.every((value) => isNaN(value)) &&
+                s.format === 'amount'
+              ) {
+                sums[index] = formatTableVal(
+                  values.reduce((prev, curr) => {
+                    if (!isNaN(Number(curr))) {
+                      return parseFloat(Number(prev + curr).toFixed(2))
+                    } else {
+                      return prev
+                    }
+                  }, 0),
+                  'amount'
+                )
+              } else {
+                sums[index] = ''
+              }
+              index++
+            }
+          })
+        } catch (error) {
+          console.log(error)
+          return
+        }
+      }
+    } else {
+      if (col.show) {
+        // 每一列，转成number类型
+        const values = data.map((item) => Number(item[col.prop]))
+        // 里面的每个数都是number，则
+        if (!values.every((value) => isNaN(value)) && col.format === 'amount') {
+          sums[index] = formatTableVal(
+            values.reduce((prev, curr) => {
+              if (!isNaN(Number(curr))) {
+                return parseFloat((prev + curr).toFixed(2))
+              } else {
+                return prev
+              }
+            }, 0),
+            'amount'
+          )
+        } else {
+          sums[index] = ''
+        }
+      }
+      index++
+    }
+  })
+  sums.unshift('合计', '', '')
+  return sums
+}
 
 // 重置
 const onReset = () => {
@@ -675,7 +1075,7 @@ const closeDialog = () => {
     landingAgency: '',
     partners: '',
     sDWCAmount: '',
-    incomeAndOutput: '',
+    incomeAndOutcome: '',
     remark: '',
   }
 }

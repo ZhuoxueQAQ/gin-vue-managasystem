@@ -88,7 +88,7 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	//		db = db.Where(query, val)
 	//	}
 	//}
-	//if info.Partners != nil {
+	//if info.Partner != nil {
 	//	for index, val := range info.LandingAgency {
 	//		query := fmt.Sprintf("partners->'$[%v].Name = (?)'", index)
 	//		db = db.Where(query, val)

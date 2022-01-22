@@ -9,6 +9,35 @@ import (
 	"time"
 )
 
+// IncomeAndOutcomeObj 结构体是培训项目的收入|支出金额对象。
+type IncomeAndOutcomeObj struct {
+	Pg decimal.Decimal `json:"pg"`
+	Ph decimal.Decimal `json:"ph"`
+	Pi decimal.Decimal `json:"pi"`
+	Pj decimal.Decimal `json:"pj"`
+	Pk decimal.Decimal `json:"pk"`
+	Pl decimal.Decimal `json:"pl"`
+	Pm decimal.Decimal `json:"pm"`
+	Pn decimal.Decimal `json:"pn"`
+	Po decimal.Decimal `json:"po"`
+	Pp decimal.Decimal `json:"pp"`
+	Pq decimal.Decimal `json:"pq"`
+	Pr decimal.Decimal `json:"pr"`
+	Ps decimal.Decimal `json:"ps"`
+	Pt decimal.Decimal `json:"pt"`
+}
+
+// IncomeAndOutcomeJSONArr 类型是一个数组，第一个元素为预算对象，第二个元素为支出对象
+type IncomeAndOutcomeJSONArr []IncomeAndOutcomeObj
+
+func (i IncomeAndOutcomeJSONArr) Value() (driver.Value, error) {
+	b, err := json.Marshal(i)
+	return string(b), err
+}
+func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
+	return json.Unmarshal(input.([]byte), i)
+}
+
 // AmountObj 结构体是一个金额对象
 type AmountObj struct {
 	Name   string          `json:"name"`
@@ -65,15 +94,15 @@ type Project struct {
 
 	Client        *AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
 	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
-	Partners      *AmountJSONArr `json:"partners" form:"partners" gorm:"type:json;column:partners;comment:技术方;"`
+	Partner       *AmountJSONArr `json:"partner" form:"partner" gorm:"type:json;column:partner;comment:技术方;"`
 
-	// IncomeAndOutput *AmountJSONArr `json:"incomeAndOutput" form:"incomeAndOutput" gorm:"type:json;column:income_and_output;comment:预算和支出（根据项目对应的收入和支出流水汇总）;"`
+	IncomeAndOutcome *IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
 
 	// Client          string `json:"client" form:"client" gorm:"column:client;comment:委托方;"`
 	// LandingAgency   string `json:"landingAgency" form:"landingAgency" gorm:"column:landing_agency;comment:落地机构;"`
 	// Partners        string `json:"partners" form:"partners" gorm:";column:partners;comment:技术方;"`
 	// SDWCAmount      string `json:"sDWCAmount" form:"sDWCAmount" gorm:";column:s_d_w_c_amount;comment:学校管理费、发展基金、福利、课酬;size:191;"`
-	IncomeAndOutput string `json:"incomeAndOutput" form:"incomeAndOutput" gorm:";column:income_and_output;comment:预算和支出（根据项目对应的收入和支出流水汇总）;size:191;"`
+	// IncomeAndOutput string `json:"incomeAndOutput" form:"incomeAndOutput" gorm:";column:income_and_output;comment:预算和支出（根据项目对应的收入和支出流水汇总）;size:191;"`
 }
 
 // TableName Project 表名
