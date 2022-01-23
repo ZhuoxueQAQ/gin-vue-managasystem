@@ -121,36 +121,37 @@
         <template v-for="col in tableCols">
           <!-- multi -->
           <template v-if="col.type === 'multi'">
-            <el-table-column :key="col.label" :label="col.label" align="center">
-              <template
-                v-for="(dataItem, dataIndex) in tableData[col.maxLengthIndex][
-                  col.prop
-                ]"
-              >
-                <template
-                  v-for="s in col.sub"
-                  :key="col.label + '-' + dataIndex + '-' + s.label"
+            <el-table-column
+              v-for="(dataItem, dataIndex) in tableData[col.maxLengthIndex][
+                col.prop
+              ]"
+              :key="col.label + '-' + dataIndex"
+              :label="col.label + String(dataIndex + 1)"
+              align="center"
+            >
+              <template v-for="(s, sIndex) in col.sub">
+                <el-table-column
+                  v-if="s.show"
+                  :key="col.label + '-' + dataIndex + '-' + sIndex"
+                  :prop="s.prop"
+                  :label="s.label"
+                  align="center"
+                  show-overflow-tooltip
+                  :width="s.width"
                 >
-                  <el-table-column
-                    v-if="s.show"
-                    :prop="s.prop"
-                    :label="s.label"
-                    align="center"
-                    show-overflow-tooltip
-                    :width="s.width"
-                  >
-                    <template #default="scope">
-                      <span>
-                        {{
-                          formatTableVal(
-                            scope.row[col.prop][dataIndex][s.prop],
-                            s.format
-                          )
-                        }}
-                      </span>
-                    </template>
-                  </el-table-column>
-                </template>
+                  <template #default="scope">
+                    <span
+                      v-if="scope.row[col.prop][dataIndex][s.prop] != undefined"
+                    >
+                      {{
+                        formatTableVal(
+                          scope.row[col.prop][dataIndex][s.prop],
+                          s.format
+                        )
+                      }}
+                    </span>
+                  </template>
+                </el-table-column>
               </template>
             </el-table-column>
           </template>
@@ -171,7 +172,7 @@
                 :width="s.width"
               >
                 <template #default="scope">
-                  <span>
+                  <span v-if="scope.row[s.prop] != undefined">
                     {{ formatTableVal(scope.row[s.prop], s.format) }}
                   </span>
                 </template>
@@ -287,185 +288,6 @@
         />
       </div>
     </div>
-    <el-dialog
-      v-model="dialogFormVisible"
-      :before-close="closeDialog"
-      title="弹窗操作"
-    >
-      <el-form :model="formData" label-position="right" label-width="80px">
-        <el-form-item label="项目名称:">
-          <el-input v-model="formData.name" clearable placeholder="请输入" />
-        </el-form-item>
-        <el-form-item label="项目类别:">
-          <el-input
-            v-model="formData.categories"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="项目所属地:">
-          <el-input v-model="formData.area" clearable placeholder="请输入" />
-        </el-form-item>
-        <el-form-item label="收费标准:">
-          <el-input
-            v-model="formData.chargeStandard"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="项目负责人:">
-          <el-input v-model="formData.manager" clearable placeholder="请输入" />
-        </el-form-item>
-        <el-form-item label="备案申请日期:">
-          <el-date-picker
-            v-model="formData.createdDate"
-            type="date"
-            style="width: 100%"
-            placeholder="选择日期"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="合同编号:">
-          <el-input
-            v-model="formData.contractNum"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="合同开始时间:">
-          <el-date-picker
-            v-model="formData.contractStartDate"
-            type="date"
-            style="width: 100%"
-            placeholder="选择日期"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="合同结束时间:">
-          <el-date-picker
-            v-model="formData.contractEndDate"
-            type="date"
-            style="width: 100%"
-            placeholder="选择日期"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="已到账费用:">
-          <el-input-number
-            v-model="formData.paidAmount"
-            style="width: 100%"
-            :precision="2"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="项目应收费用:">
-          <el-input-number
-            v-model="formData.projectAmount"
-            style="width: 100%"
-            :precision="2"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="项目码:">
-          <el-input
-            v-model="formData.projectCode"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="未到账金额:">
-          <el-input-number
-            v-model="formData.unpaidAmount"
-            style="width: 100%"
-            :precision="2"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="培训模式:">
-          <el-input
-            v-model="formData.trainMode"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="培训开始时间:">
-          <el-date-picker
-            v-model="formData.trainStartDate"
-            type="date"
-            style="width: 100%"
-            placeholder="选择日期"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="培训结束时间:">
-          <el-date-picker
-            v-model="formData.trainEndDate"
-            type="date"
-            style="width: 100%"
-            placeholder="选择日期"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="培训人数:">
-          <el-input
-            v-model.number="formData.trainNumOfPerson"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="培训学时数:">
-          <el-input
-            v-model.number="formData.trainTime"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="委托方:">
-          <el-input v-model="formData.client" clearable placeholder="请输入" />
-        </el-form-item>
-        <el-form-item label="落地机构:">
-          <el-input
-            v-model="formData.landingAgency"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="技术方:">
-          <el-input
-            v-model="formData.partners"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="学校管理费、发展基金、福利、课酬:">
-          <el-input
-            v-model="formData.sDWCAmount"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="预算和支出（根据项目对应的收入和支出流水汇总）:">
-          <el-input
-            v-model="formData.incomeAndOutcome"
-            clearable
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="备注:">
-          <el-input v-model="formData.remark" clearable placeholder="请输入" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button size="small" @click="closeDialog">取 消</el-button>
-          <el-button
-            size="small"
-            type="primary"
-            @click="enterDialog"
-          >确 定</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -477,11 +299,8 @@ export default {
 
 <script setup>
 import {
-  createProject,
   deleteProject,
   deleteProjectByIds,
-  updateProject,
-  findProject,
   getProjectList,
 } from '@/api/project'
 
@@ -490,73 +309,9 @@ import { formatTableVal } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 
-// 自动化生成的字典（可能为空）以及字段
-const formData = ref({
-  name: '',
-  categories: '',
-  area: '',
-  chargeStandard: '',
-  manager: '',
-  createdDate: new Date(),
-  contractNum: '',
-  contractStartDate: new Date(),
-  contractEndDate: new Date(),
-  paidAmount: 0,
-  projectAmount: 0,
-  projectCode: '',
-  unpaidAmount: 0,
-  trainMode: '',
-  trainStartDate: new Date(),
-  trainEndDate: new Date(),
-  trainNumOfPerson: 0,
-  trainTime: 0,
-  client: [{ name: '', radio: 0, amount: 0 }],
-  landingAgency: [{ name: '', radio: 0, amount: 0 }],
-  partners: [{ name: '', radio: 0, amount: 0 }],
-  sAmount: 0,
-  dAmount: 0,
-  wAmount: 0,
-  cAmount: 0,
-  sRadio: 0,
-  dRadio: 0,
-  wRadio: 0,
-  cRadio: 0,
-  incomeAndOutcome: [
-    {
-      pg: 0.0,
-      ph: 0.0,
-      pi: 0.0,
-      pj: 0.0,
-      pk: 0.0,
-      pl: 0.0,
-      pm: 0.0,
-      pn: 0.0,
-      po: 0.0,
-      pp: 0.0,
-      pq: 0.0,
-      pr: 0.0,
-      ps: 0.0,
-      pt: 0.0,
-    },
-    {
-      pg: 0.0,
-      ph: 0.0,
-      pi: 0.0,
-      pj: 0.0,
-      pk: 0.0,
-      pl: 0.0,
-      pm: 0.0,
-      pn: 0.0,
-      po: 0.0,
-      pp: 0.0,
-      pq: 0.0,
-      pr: 0.0,
-      ps: 0.0,
-      pt: 0.0,
-    },
-  ],
-  remark: '',
-})
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // =========== 表格控制部分 ===========
 const page = ref(1)
@@ -626,6 +381,7 @@ const tableCols = ref([
     type: 'multi',
     label: '委托方',
     maxLengthIndex: 0,
+    maxSubItemNum: 1,
     sub: [
       { prop: 'name', label: '名称', show: true, width: 150 },
       {
@@ -649,6 +405,7 @@ const tableCols = ref([
     type: 'multi',
     label: '落地方',
     maxLengthIndex: 0,
+    maxSubItemNum: 1,
     sub: [
       { prop: 'name', label: '名称', show: true, width: 150 },
       {
@@ -672,6 +429,7 @@ const tableCols = ref([
     label: '技术方',
     type: 'multi',
     maxLengthIndex: 0,
+    maxSubItemNum: 1,
     sub: [
       { prop: 'name', label: '名称', show: true, width: 150 },
       {
@@ -838,6 +596,7 @@ const getIncomeAndOutcomBias = (param) => {
 
   return sums
 }
+// 计算表格合计
 const getSummries = (param) => {
   const { columns, data } = param
   const sums = []
@@ -908,6 +667,7 @@ const getSummries = (param) => {
       index++
     }
   })
+  // 项目名称和备案申请日期不在tableCols里面，所以要加上
   sums.unshift('合计', '', '')
   return sums
 }
@@ -943,7 +703,6 @@ const getTableData = async() => {
     pageSize: pageSize.value,
     ...searchInfo.value,
   })
-  console.log('table', table)
   if (table.code === 0) {
     tableData.value = table.data.list
     total.value = table.data.total
@@ -1011,12 +770,14 @@ const onDelete = async() => {
   }
 }
 
-// 行为控制标记（弹窗内部需要增还是改）
-const type = ref('')
-
 // 更新行
 const updateProjectFunc = async(row) => {
-  console.log(row)
+  router.push({
+    name: 'projectForm',
+    query: {
+      id: row.ID,
+    },
+  })
   // const res = await findProject({ ID: row.ID })
   // type.value = 'update'
   // if (res.code === 0) {
@@ -1036,69 +797,6 @@ const deleteProjectFunc = async(row) => {
     if (tableData.value.length === 1 && page.value > 1) {
       page.value--
     }
-    getTableData()
-  }
-}
-
-// 弹窗控制标记
-const dialogFormVisible = ref(false)
-
-// 打开弹窗
-const openDialog = () => {
-  type.value = 'create'
-  dialogFormVisible.value = true
-}
-
-// 关闭弹窗
-const closeDialog = () => {
-  dialogFormVisible.value = false
-  formData.value = {
-    name: '',
-    categories: '',
-    area: '',
-    chargeStandard: '',
-    manager: '',
-    createdDate: new Date(),
-    contractNum: '',
-    contractStartDate: new Date(),
-    contractEndDate: new Date(),
-    paidAmount: 0,
-    projectAmount: 0,
-    projectCode: '',
-    unpaidAmount: 0,
-    trainMode: '',
-    trainStartDate: new Date(),
-    trainEndDate: new Date(),
-    trainNumOfPerson: 0,
-    trainTime: 0,
-    client: '',
-    landingAgency: '',
-    partners: '',
-    sDWCAmount: '',
-    incomeAndOutcome: '',
-    remark: '',
-  }
-}
-// 弹窗确定
-const enterDialog = async() => {
-  let res
-  switch (type.value) {
-    case 'create':
-      res = await createProject(formData.value)
-      break
-    case 'update':
-      res = await updateProject(formData.value)
-      break
-    default:
-      res = await createProject(formData.value)
-      break
-  }
-  if (res.code === 0) {
-    ElMessage({
-      type: 'success',
-      message: '创建/更改成功',
-    })
-    closeDialog()
     getTableData()
   }
 }

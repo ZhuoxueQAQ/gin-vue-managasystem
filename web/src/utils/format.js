@@ -45,22 +45,27 @@ export const numberToThousands = (num) => {
 }
 
 export const numberToPercentage = (radio) => {
-  return (radio * 100).toString().concat('%')
+  return radio.toString().concat('%')
 }
 export const percentageToNumber = (str) => {
   return parseFloat(str.split('%').join(''))
 }
 
 export const formatTableVal = (value, format) => {
-  switch (format) {
-    case 'date':
-      return myDateFormat(value)
-    case 'amount':
-      return numberToThousands(value)
-    case 'radio':
-      return numberToPercentage(value)
-    default:
-      return value
+  try {
+    switch (format) {
+      case 'date':
+        return myDateFormat(value)
+      case 'amount':
+        return numberToThousands(value)
+      case 'radio':
+        return numberToPercentage(value)
+      default:
+        return value
+    }
+  } catch (e) {
+    console.log(value, format)
+    return ''
   }
 }
 
