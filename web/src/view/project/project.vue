@@ -84,7 +84,7 @@
         </el-popover>
       </div>
       <el-table
-        v-if="tableData.length > 0"
+        v-if="tableCols !== undefined && tableData !== undefined"
         ref="multipleTable"
         :default-sort="{ prop: 'createdDate', order: 'descending' }"
         style="width: 100%"
@@ -120,42 +120,44 @@
         // todo clp
         <template v-for="col in tableCols">
           <!-- multi -->
-          <template v-if="col.type === 'multi'">
-            <el-table-column
-              v-for="(dataItem, dataIndex) in tableData[col.maxLengthIndex][
-                col.prop
-              ]"
-              :key="col.label + '-' + dataIndex"
-              :label="col.label + String(dataIndex + 1)"
-              align="center"
-            >
-              <template v-for="(s, sIndex) in col.sub">
+          <template v-if="col.colType === 'multi'">
+            <!-- showlist such as [true, false, false] -->
+            <template v-for="(show, showIndex) in col.showList">
+              <template v-if="show">
                 <el-table-column
-                  v-if="s.show"
-                  :key="col.label + '-' + dataIndex + '-' + sIndex"
-                  :prop="s.prop"
-                  :label="s.label"
+                  :key="col.prop + '-' + showIndex"
+                  :label="col.label + String(showIndex + 1)"
                   align="center"
-                  show-overflow-tooltip
-                  :width="s.width"
                 >
-                  <template #default="scope">
-                    <span
-                      v-if="scope.row[col.prop][dataIndex][s.prop] != undefined"
-                    >
-                      {{
-                        formatTableVal(
-                          scope.row[col.prop][dataIndex][s.prop],
-                          s.format
-                        )
-                      }}
-                    </span>
-                  </template>
+                  <el-table-column
+                    v-for="s in col.sub"
+                    :key="col.label + '-' + showIndex + '-' + s.label"
+                    :prop="s.prop"
+                    :label="s.label"
+                    align="center"
+                    show-overflow-tooltip
+                    :width="s.width"
+                  >
+                    <template #default="scope">
+                      <span
+                        v-if="
+                          scope.row[col.prop][showIndex][s.prop] != undefined
+                        "
+                      >
+                        {{
+                          formatTableVal(
+                            scope.row[col.prop][showIndex][s.prop],
+                            s.format
+                          )
+                        }}
+                      </span>
+                    </template>
+                  </el-table-column>
                 </el-table-column>
               </template>
-            </el-table-column>
+            </template>
           </template>
-          <template v-else-if="col.type === 'group'">
+          <template v-else-if="col.colType === 'group'">
             <el-table-column
               v-if="col.show"
               :key="col.label"
@@ -303,6 +305,7 @@ import {
   deleteProjectByIds,
   getProjectList,
 } from '@/api/project'
+import { findManageSystemSetting } from '@/api/manageSystemSetting.js'
 
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
@@ -313,227 +316,13 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
+// todo ,multi项的最大长度设置为showList的长度，如：showList:[true, true, false]
 // =========== 表格控制部分 ===========
 const page = ref(1)
 const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
-const tableCols = ref([
-  { prop: 'categories', label: '项目类别', show: true, width: 100 },
-  { prop: 'projectNum', label: '项目码', show: true, width: 100 },
-  { prop: 'manager', label: '项目负责人', show: true, width: 100 },
-  { prop: 'area', label: '所属地', show: true, width: 100 },
-  { prop: 'trainMode', label: '培训模式', show: true, width: 100 },
-  { prop: 'chargeStandard', label: '收费标准', show: true, width: 100 },
-  { prop: 'trainTime', label: '学时数', show: true, width: 100 },
-  { prop: 'trainNumOfPerson', label: '培训人数', show: true, width: 100 },
-  {
-    prop: 'trainStartDate',
-    label: '培训开始时间',
-    show: true,
-    format: 'date',
-    width: 120,
-  },
-  {
-    prop: 'trainEndDate',
-    label: '培训结束时间',
-    show: true,
-    format: 'date',
-    width: 120,
-  },
-  {
-    prop: 'contractStartDate',
-    label: '合同开始时间',
-    show: true,
-    format: 'date',
-    width: 120,
-  },
-  {
-    prop: 'contractEndDate',
-    label: '合同结束时间',
-    show: true,
-    format: 'date',
-    width: 120,
-  },
-  {
-    prop: 'projectAmount',
-    label: '项目应收费用',
-    show: true,
-    format: 'amount',
-    width: 150,
-  },
-  {
-    prop: 'paidAmount',
-    label: '已到账费用',
-    show: true,
-    format: 'amount',
-    width: 150,
-  },
-  {
-    prop: 'unpaidAmount',
-    label: '未到账金额',
-    show: true,
-    format: 'amount',
-    width: 150,
-  },
-  {
-    prop: 'client',
-    type: 'multi',
-    label: '委托方',
-    maxLengthIndex: 0,
-    maxSubItemNum: 1,
-    sub: [
-      { prop: 'name', label: '名称', show: true, width: 150 },
-      {
-        prop: 'radio',
-        label: '分成比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'amount',
-        label: '分成',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    prop: 'landingAgency',
-    type: 'multi',
-    label: '落地方',
-    maxLengthIndex: 0,
-    maxSubItemNum: 1,
-    sub: [
-      { prop: 'name', label: '名称', show: true, width: 150 },
-      {
-        prop: 'radio',
-        label: '分成比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'amount',
-        label: '分成',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    prop: 'partner',
-    label: '技术方',
-    type: 'multi',
-    maxLengthIndex: 0,
-    maxSubItemNum: 1,
-    sub: [
-      { prop: 'name', label: '名称', show: true, width: 150 },
-      {
-        prop: 'radio',
-        label: '分成比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'amount',
-        label: '分成',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    label: '学校管理费180043',
-    show: true,
-    type: 'group',
-    sub: [
-      {
-        prop: 'sRadio',
-        label: '比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'sAmount',
-        label: '金额',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    label: '发展基金210098',
-    show: true,
-    type: 'group',
-    sub: [
-      {
-        prop: 'sRadio',
-        label: '比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'sAmount',
-        label: '金额',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    label: '福利220121',
-    show: true,
-    type: 'group',
-    sub: [
-      {
-        prop: 'sRadio',
-        label: '比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'sAmount',
-        label: '金额',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  {
-    label: '课酬440120',
-    show: true,
-    type: 'group',
-    sub: [
-      {
-        prop: 'sRadio',
-        label: '比例',
-        format: 'radio',
-        show: true,
-        width: 100,
-      },
-      {
-        prop: 'sAmount',
-        label: '金额',
-        format: 'amount',
-        show: true,
-        width: 150,
-      },
-    ],
-  },
-  { prop: 'remark', label: '备注', show: true, width: 100 },
-])
+const tableCols = ref([])
 const incomeAndOutcomeCols = ref([
   { prop: 'pg', label: '专家课酬', format: 'amount', width: 120 },
   { prop: 'ph', label: '方案费', format: 'amount', width: 120 },
@@ -562,6 +351,7 @@ const incomeAndOutcomeCols = ref([
   },
 ])
 const searchInfo = ref({})
+const manageSystemSettingID = ref(1)
 
 // 预算和支出的索引
 const indexMethod = (index) => {
@@ -596,82 +386,70 @@ const getIncomeAndOutcomBias = (param) => {
 
   return sums
 }
+
+const sum = (values) => {
+  return values.reduce((prev, curr) => {
+    if (!isNaN(Number(curr))) {
+      return parseFloat(Number(prev + curr).toFixed(2))
+    } else {
+      return prev
+    }
+  }, 0)
+}
+
 // 计算表格合计
 const getSummries = (param) => {
   const { columns, data } = param
   const sums = []
   let index = 0
   tableCols.value.forEach((col) => {
-    // multi
-    if (col.type === 'multi' || col.type === 'group') {
-      // todo 1 is maxSubItemNum
-      const maxSubItemNum = col.type === 'group' ? 1 : 1
-      for (let i = 0; i < maxSubItemNum; i++) {
-        try {
-          col.sub.forEach((s) => {
-            if (s.show) {
-              // val
+    switch (col.colType) {
+      case 'multi':
+        col.showList.forEach((show, i) => {
+          if (show) {
+            col.sub.forEach((s) => {
               const values = data.map((item) => {
-                const tmp =
-                  col.type === 'multi'
-                    ? item[col.prop][i][s.prop]
-                    : item[s.prop]
-                return tmp === undefined ? NaN : tmp
+                return item[col.prop][i][s.prop] === undefined
+                  ? NaN
+                  : item[col.prop][i][s.prop]
               })
-              // 都是number，且是amount格式
-              if (
-                !values.every((value) => isNaN(value)) &&
-                s.format === 'amount'
-              ) {
-                sums[index] = formatTableVal(
-                  values.reduce((prev, curr) => {
-                    if (!isNaN(Number(curr))) {
-                      return parseFloat(Number(prev + curr).toFixed(2))
-                    } else {
-                      return prev
-                    }
-                  }, 0),
-                  'amount'
-                )
-              } else {
-                sums[index] = ''
-              }
+              sums[index] =
+                !values.every((value) => isNaN(value)) && s.format === 'amount'
+                  ? formatTableVal(sum(values), 'amount')
+                  : ''
               index++
-            }
-          })
-        } catch (error) {
-          console.log(error)
-          return
+            })
+          }
+        })
+        break
+      case 'group':
+        col.sub.forEach((s) => {
+          if (s.show) {
+            const values = data.map((item) => Number(item[s.prop]))
+            sums[index] =
+              !values.every((value) => isNaN(value)) && s.format === 'amount'
+                ? formatTableVal(sum(values), 'amount')
+                : ''
+            index++
+          }
+        })
+        break
+      default:
+        if (col.show) {
+          const values = data.map((item) => Number(item[col.prop]))
+          sums[index] =
+            !values.every((value) => isNaN(value)) && col.format === 'amount'
+              ? formatTableVal(sum(values), 'amount')
+              : ''
+          index++
         }
-      }
-    } else {
-      if (col.show) {
-        // 每一列，转成number类型
-        const values = data.map((item) => Number(item[col.prop]))
-        // 里面的每个数都是number，则
-        if (!values.every((value) => isNaN(value)) && col.format === 'amount') {
-          sums[index] = formatTableVal(
-            values.reduce((prev, curr) => {
-              if (!isNaN(Number(curr))) {
-                return parseFloat((prev + curr).toFixed(2))
-              } else {
-                return prev
-              }
-            }, 0),
-            'amount'
-          )
-        } else {
-          sums[index] = ''
-        }
-      }
-      index++
+        break
     }
   })
   // 项目名称和备案申请日期不在tableCols里面，所以要加上
   sums.unshift('合计', '', '')
   return sums
 }
-
 // 重置
 const onReset = () => {
   searchInfo.value = {}
@@ -711,6 +489,20 @@ const getTableData = async() => {
   }
 }
 
+// 查询表格模板
+const getTableCols = async() => {
+  //
+  const manageSystemSetting = await findManageSystemSetting({
+    ID: manageSystemSettingID.value,
+  })
+  if (manageSystemSetting.code === 0) {
+    tableCols.value =
+      manageSystemSetting.data.remanageSystemSetting.projectTableCols
+  }
+}
+// 获取表格列模板
+getTableCols()
+// 获取表格数据
 getTableData()
 
 // ============== 表格控制部分结束 ===============
@@ -733,7 +525,7 @@ const deleteRow = (row) => {
   ElMessageBox.confirm('确定要删除吗?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
-    type: 'warning',
+    colType: 'warning',
   }).then(() => {
     deleteProjectFunc(row)
   })
@@ -747,7 +539,7 @@ const onDelete = async() => {
   const ids = []
   if (multipleSelection.value.length === 0) {
     ElMessage({
-      type: 'warning',
+      colType: 'warning',
       message: '请选择要删除的数据',
     })
     return
@@ -759,7 +551,7 @@ const onDelete = async() => {
   const res = await deleteProjectByIds({ ids })
   if (res.code === 0) {
     ElMessage({
-      type: 'success',
+      colType: 'success',
       message: '删除成功',
     })
     if (tableData.value.length === ids.length && page.value > 1) {
@@ -778,12 +570,6 @@ const updateProjectFunc = async(row) => {
       id: row.ID,
     },
   })
-  // const res = await findProject({ ID: row.ID })
-  // type.value = 'update'
-  // if (res.code === 0) {
-  //   formData.value = res.data.reproject
-  //   dialogFormVisible.value = true
-  // }
 }
 
 // 删除行
@@ -791,7 +577,7 @@ const deleteProjectFunc = async(row) => {
   const res = await deleteProject({ ID: row.ID })
   if (res.code === 0) {
     ElMessage({
-      type: 'success',
+      colType: 'success',
       message: '删除成功',
     })
     if (tableData.value.length === 1 && page.value > 1) {

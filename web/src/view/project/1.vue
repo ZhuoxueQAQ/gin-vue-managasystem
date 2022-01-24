@@ -443,230 +443,183 @@
     </el-form>
   </div>
 </template>
-<script>
-export default {
-  components: {},
-  props: [],
-  data() {
-    return {
-      formData: {
-        name: undefined,
-        categories: '',
-        chargeStandard: undefined,
-        createdDate: '2022-01-04',
-        manager: undefined,
-        projectCode: undefined,
-        area: '',
-        trainMode: undefined,
-        trainNumOfPerson: '',
-        trainTime: undefined,
-        trainStartDate: undefined,
-        trainEndDate: undefined,
-        contractStartDate: undefined,
-        contractEndDate: undefined,
-        sRadio: undefined,
-        sAmount: undefined,
-        dRadio: undefined,
-        dAmount: undefined,
-        wRadio: undefined,
-        wAmount: undefined,
-        cRadio: undefined,
-        cAmount: undefined,
-        name: '',
-        radio: '',
-        amount: undefined,
-        field200: undefined,
-        field201: '',
-        field202: undefined,
-        field204: undefined,
-        field205: '',
-        field206: undefined,
-        remark: undefined,
-      },
-      rules: {
-        name: [
-          {
-            required: true,
-            message: '请输入项目名称项目名称',
-            trigger: 'blur',
-          },
-        ],
-        categories: [
-          {
-            required: true,
-            message: '请输入项目类型',
-            trigger: 'blur',
-          },
-        ],
-        chargeStandard: [
-          {
-            required: true,
-            message: '请输入收费标准',
-            trigger: 'blur',
-          },
-        ],
-        createdDate: [
-          {
-            required: true,
-            message: '请输入备案申请日期备案日期',
-            trigger: 'change',
-          },
-        ],
-        manager: [],
-        projectCode: [],
-        area: [
-          {
-            required: true,
-            message: '项目所属地',
-            trigger: 'blur',
-          },
-        ],
-        trainMode: [
-          {
-            required: true,
-            message: '请输入培训模式：',
-            trigger: 'blur',
-          },
-        ],
-        trainNumOfPerson: [
-          {
-            required: true,
-            message: '请输入培训人数',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^\d+$/g,
-            message: '该项为非负整数',
-            trigger: 'blur',
-          },
-        ],
-        trainTime: [
-          {
-            required: true,
-            message: '请输入培训学时数',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^\d+$/g,
-            message: '该项为非负整数',
-            trigger: 'blur',
-          },
-        ],
-        trainStartDate: [],
-        trainEndDate: [],
-        contractStartDate: [],
-        contractEndDate: [],
-        sRadio: [
-          {
-            required: true,
-            message: '请输入学校管理费比例',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^(100|(([1-9]){1}[0-9]?|0{1})((\.)([0-9]){1,2})?)$/,
-            message: '该项为0~100之间的百分数',
-            trigger: 'blur',
-          },
-        ],
-        sAmount: [],
-        dRadio: [
-          {
-            required: true,
-            message: '请输入发展基金比例',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^(100|(([1-9]){1}[0-9]?|0{1})((\.)([0-9]){1,2})?)$/,
-            message: '该项为0~100之间的百分数',
-            trigger: 'blur',
-          },
-        ],
-        dAmount: [],
-        wRadio: [
-          {
-            required: true,
-            message: '请输入福利比例',
-            trigger: 'blur',
-          },
-          {
-            pattern: /^(100|(([1-9]){1}[0-9]?|0{1})((\.)([0-9]){1,2})?)$/,
-            message: '该项为0~100之间的百分数',
-            trigger: 'blur',
-          },
-        ],
-        wAmount: [],
-        cRadio: [
-          {
-            required: true,
-            message: '请输入课酬比例',
-            trigger: 'blur',
-          },
-        ],
-        cAmount: [],
-        name: [
-          {
-            required: true,
-            message: '请输入名称',
-            trigger: 'blur',
-          },
-        ],
-        radio: [
-          {
-            required: true,
-            message: '比例',
-            trigger: 'blur',
-          },
-        ],
-        amount: [],
-        field200: [
-          {
-            required: true,
-            message: '请输入名称',
-            trigger: 'blur',
-          },
-        ],
-        field201: [
-          {
-            required: true,
-            message: '比例',
-            trigger: 'blur',
-          },
-        ],
-        field202: [],
-        field204: [
-          {
-            required: true,
-            message: '请输入名称',
-            trigger: 'blur',
-          },
-        ],
-        field205: [
-          {
-            required: true,
-            message: '比例',
-            trigger: 'blur',
-          },
-        ],
-        field206: [],
-        remark: [],
-      },
-    }
+<script setup>
+const tableCols = ref([
+  { prop: 'categories', label: '项目类别', show: true, width: 100 },
+  { prop: 'projectNum', label: '项目码', show: true, width: 100 },
+  { prop: 'manager', label: '项目负责人', show: true, width: 100 },
+  { prop: 'area', label: '所属地', show: true, width: 100 },
+  { prop: 'trainMode', label: '培训模式', show: true, width: 100 },
+  { prop: 'chargeStandard', label: '收费标准', show: true, width: 100 },
+  { prop: 'trainTime', label: '学时数', show: true, width: 100 },
+  { prop: 'trainNumOfPerson', label: '培训人数', show: true, width: 100 },
+  {
+    prop: 'trainStartDate',
+    label: '培训开始时间',
+    show: true,
+    format: 'date',
+    width: 120,
   },
-  computed: {},
-  watch: {},
-  created() {},
-  mounted() {},
-  methods: {
-    submitForm() {
-      this.$refs['elForm'].validate((valid) => {
-        if (!valid) return
-        // TODO 提交表单
-      })
-    },
-    resetForm() {
-      this.$refs['elForm'].resetFields()
-    },
+  {
+    prop: 'trainEndDate',
+    label: '培训结束时间',
+    show: true,
+    format: 'date',
+    width: 120,
   },
-}
+  {
+    prop: 'contractStartDate',
+    label: '合同开始时间',
+    show: true,
+    format: 'date',
+    width: 120,
+  },
+  {
+    prop: 'contractEndDate',
+    label: '合同结束时间',
+    show: true,
+    format: 'date',
+    width: 120,
+  },
+  {
+    prop: 'projectAmount',
+    label: '项目应收费用',
+    show: true,
+    format: 'amount',
+    width: 150,
+  },
+  {
+    prop: 'paidAmount',
+    label: '已到账费用',
+    show: true,
+    format: 'amount',
+    width: 150,
+  },
+  {
+    prop: 'unpaidAmount',
+    label: '未到账金额',
+    show: true,
+    format: 'amount',
+    width: 150,
+  },
+  {
+    prop: 'client',
+    colType: 'multi',
+    label: '委托方',
+    showList: [true, false, false],
+    sub: [
+      { prop: 'name', label: '名称', width: 150 },
+      { prop: 'radio', label: '分成比例', format: 'radio', width: 100 },
+      { prop: 'amount', label: '分成', format: 'amount', width: 150 },
+    ],
+  },
+  {
+    prop: 'landingAgency',
+    colType: 'multi',
+    label: '落地方',
+    showList: [true, false, false],
+    sub: [
+      { prop: 'name', label: '名称', width: 150 },
+      { prop: 'radio', label: '分成比例', format: 'radio', width: 100 },
+      { prop: 'amount', label: '分成', format: 'amount', width: 150 },
+    ],
+  },
+  {
+    prop: 'partner',
+    label: '技术方',
+    colType: 'multi',
+    showList: [true, false, false],
+    sub: [
+      { prop: 'name', label: '名称', width: 150 },
+      { prop: 'radio', label: '分成比例', format: 'radio', width: 100 },
+      { prop: 'amount', label: '分成', format: 'amount', width: 150 },
+    ],
+  },
+  {
+    label: '学校管理费180043',
+    show: true,
+    colType: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  {
+    label: '发展基金210098',
+    show: true,
+    colType: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  {
+    label: '福利220121',
+    show: true,
+    colType: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  {
+    label: '课酬440120',
+    show: true,
+    colType: 'group',
+    sub: [
+      {
+        prop: 'sRadio',
+        label: '比例',
+        format: 'radio',
+        show: true,
+        width: 100,
+      },
+      {
+        prop: 'sAmount',
+        label: '金额',
+        format: 'amount',
+        show: true,
+        width: 150,
+      },
+    ],
+  },
+  { prop: 'remark', label: '备注', show: true, width: 100 },
+])
 </script>
 <style></style>

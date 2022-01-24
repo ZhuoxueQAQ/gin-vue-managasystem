@@ -1,6 +1,7 @@
 package autocode
 
 import (
+	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
@@ -47,13 +48,15 @@ func (projectService *ProjectService) GetProject(id uint) (err error, project au
 
 // GetProjectInfoList 分页获取Project记录
 // Author [piexlmax](https://github.com/piexlmax)
-func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.ProjectSearch) (err error, list interface{}, total int64) {
+func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.ProjectSearch) (err error, list interface{},
+	total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
 	db := global.GVA_DB.Model(&autocode.Project{})
 	var projects []autocode.Project
 	// 如果有条件搜索 下方会自动创建搜索语句
+	// todo 当筛选条件改变时才筛选（pagesize=1？）
 	if info.Name != "" {
 		db = db.Where("name LIKE ?", "%"+info.Name+"%")
 	}
@@ -76,29 +79,32 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	// todo 日期右边界
 
 	// 委托方、落地机构和技术方查询
-	//if info.Client != nil {
-	//	for index, val := range info.Client {
-	//		query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
-	//		db = db.Where(query, val)
-	//	}
-	//}
-	//if info.LandingAgency != nil {
-	//	for index, val := range info.LandingAgency {
-	//		query := fmt.Sprintf("landing_agency->'$[%v].Name = (?)'", index)
-	//		db = db.Where(query, val)
-	//	}
-	//}
-	//if info.Partner != nil {
-	//	for index, val := range info.LandingAgency {
-	//		query := fmt.Sprintf("partners->'$[%v].Name = (?)'", index)
-	//		db = db.Where(query, val)
-	//	}
-	//}
+	if info.Client != nil {
+		for index, val := range *(info.Client) {
+			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
+			db = db.Where(query, val)
+		}
+	}
+	if info.LandingAgency != nil {
+		for index, val := range *(info.LandingAgency) {
+			query := fmt.Sprintf("landing_agency->'$[%v].Name = (?)'", index)
+			db = db.Where(query, val)
+		}
+	}
+	if info.Partner != nil {
+		for index, val := range *(info.LandingAgency) {
+			query := fmt.Sprintf("partners->'$[%v].Name = (?)'", index)
+			db = db.Where(query, val)
+		}
+	}
+	// total 是已经筛选的数据的条数
 	err = db.Count(&total).Error
 	if err != nil {
 		return
 	}
 	err = db.Limit(limit).Offset(offset).Find(&projects).Error
+
+	// todo 导出的时候，取消分页，返回total。前端来进行导出？
 
 	return err, projects, total
 }
