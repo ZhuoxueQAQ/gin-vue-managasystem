@@ -1,11 +1,11 @@
 <template>
-  <div style="margin-right: 20px">
+  <div class="gva-form-box">
     <el-form
       ref="formRef"
       :model="formData"
       :rules="rules"
       size="medium"
-      label-width="15px"
+      style="margin-right: 20px"
     >
       <el-row>
         <el-col :span="16">
@@ -49,7 +49,6 @@
             <el-date-picker
               v-model="formData.createdDate"
               format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
               :style="{ width: '100%' }"
               placeholder="请输入备案申请日期备案日期"
               clearable
@@ -136,7 +135,6 @@
             <el-date-picker
               v-model="formData.trainStartDate"
               format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
               :style="{ width: '100%' }"
               placeholder="请输入培训开始时间"
               clearable
@@ -152,7 +150,6 @@
             <el-date-picker
               v-model="formData.trainEndDate"
               format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
               :style="{ width: '100%' }"
               placeholder="请选择培训结束时间"
               clearable
@@ -168,7 +165,6 @@
             <el-date-picker
               v-model="formData.contractStartDate"
               format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
               :style="{ width: '100%' }"
               placeholder="请选择合同开始时间"
               clearable
@@ -184,7 +180,6 @@
             <el-date-picker
               v-model="formData.contractEndDate"
               format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
               :style="{ width: '100%' }"
               placeholder="请输入合同结束时间"
               clearable
@@ -542,21 +537,21 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col :span="12" :offset="6">
+        <el-col>
           <el-form-item size="large" align="center">
             <el-button
               type="primary"
-              style="margin-right: 50px"
+              style="margin-right: 20px"
               @click="submitForm"
             >提交</el-button>
             <el-button
               v-if="type === 'create'"
-              style="margin-left: 50px"
+              style="margin-left: 20px"
               @click="resetForm"
             >重置</el-button>
             <el-button
               v-if="type === 'update'"
-              style="margin-left: 50px"
+              style="margin-left: 20px"
               @click="back"
             >返回</el-button>
           </el-form-item>
@@ -605,7 +600,7 @@ const formData = ref({
   trainTime: 0,
   client: [{ name: '', radio: 0, amount: 0 }],
   landingAgency: [{ name: '', radio: 0, amount: 0 }],
-  partners: [{ name: '', radio: 0, amount: 0 }],
+  partner: [{ name: '', radio: 0, amount: 0 }],
   sAmount: 0,
   dAmount: 0,
   wAmount: 0,
@@ -854,6 +849,7 @@ const submitForm = async() => {
   let res
   formRef.value.validate(async(valid) => {
     if (valid) {
+      console.log(formData.value)
       switch (type.value) {
         case 'create':
           res = await createProject(formData.value)

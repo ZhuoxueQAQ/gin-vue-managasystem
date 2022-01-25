@@ -2,53 +2,154 @@
 <template>
   <div>
     <div class="gva-search-box">
-      <el-form :inline="true" :model="searchInfo" class="demo-form-inline">
-        <el-form-item label="项目名称">
-          <el-input v-model="searchInfo.name" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="项目类别">
-          <el-input v-model="searchInfo.categories" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="备案申请日期">
-          <el-input v-model="searchInfo.createdDate" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="合同开始时间">
-          <el-input
-            v-model="searchInfo.contractStartDate"
-            placeholder="搜索条件"
-          />
-        </el-form-item>
-        <el-form-item label="项目码">
-          <el-input v-model="searchInfo.projectCode" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="培训开始时间">
-          <el-input
-            v-model="searchInfo.trainStartDate"
-            placeholder="搜索条件"
-          />
-        </el-form-item>
-        <el-form-item label="委托方">
-          <el-input v-model="searchInfo.client" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="落地机构">
-          <el-input v-model="searchInfo.landingAgency" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item label="技术方">
-          <el-input v-model="searchInfo.partners" placeholder="搜索条件" />
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            size="mini"
-            type="primary"
-            icon="search"
-            @click="onSubmit"
-          >查询</el-button>
-          <el-button
-            size="mini"
-            icon="refresh"
-            @click="onReset"
-          >重置</el-button>
-        </el-form-item>
+      <el-form :model="searchInfo" size="medium" label-width="100px">
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="项目名称" label-width="100px">
+              <el-input
+                v-model="searchInfo.name"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="项目类别" label-width="100px">
+              <el-input
+                v-model="searchInfo.categories"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="项目码" label-width="100px">
+              <el-input
+                v-model="searchInfo.projectCode"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="8">
+            <el-form-item label="备案申请日期" label-width="100px">
+              <el-date-picker
+                v-model="searchInfo.createdDateL"
+                format="YYYY-MM-DD"
+                :style="{ width: '100%' }"
+                placeholder="请输入待匹配文本"
+                type="daterange"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="合同开始时间">
+              <el-date-picker
+                v-model="searchInfo.contractStartDateL"
+                format="YYYY-MM-DD"
+                :style="{ width: '100%' }"
+                placeholder="请输入待匹配文本"
+                type="daterange"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="培训开始时间">
+              <el-date-picker
+                v-model="searchInfo.trainStartDateL"
+                format="YYYY-MM-DD"
+                :style="{ width: '100%' }"
+                placeholder="请输入待匹配文本"
+                type="daterange"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col
+            v-for="index in maxFormRowNum"
+            :key="'client' + index"
+            :span="24 / maxFormRowNum"
+          >
+            <el-form-item
+              :label="`委托方${String(index)}名称`"
+              label-width="100px"
+            >
+              <el-input
+                v-model="searchInfo.client[index - 1].name"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col
+            v-for="index in maxFormRowNum"
+            :key="'landingAgency' + index"
+            :span="24 / maxFormRowNum"
+          >
+            <el-form-item
+              :label="`落地方${String(index)}名称`"
+              label-width="100px"
+            >
+              <el-input
+                v-model="searchInfo.landingAgency[index - 1].name"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col
+            v-for="index in maxFormRowNum"
+            :key="'partner' + index"
+            :span="24 / maxFormRowNum"
+          >
+            <el-form-item
+              :label="`技术方${String(index)}名称`"
+              label-width="100px"
+            >
+              <el-input
+                v-model="searchInfo.partner[index - 1].name"
+                placeholder="请输入待匹配文本"
+                :style="{ width: '100%' }"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :offset="8">
+            <el-form-item>
+              <el-button
+                size="mini"
+                type="primary"
+                icon="search"
+                @click="onSubmit"
+              >查询</el-button>
+              <el-button
+                size="mini"
+                icon="refresh"
+                @click="onReset"
+              >重置</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
     <div class="gva-table-box">
@@ -323,6 +424,8 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const tableCols = ref([])
+// 委托方、落地机构和合作方的最大个数
+const maxFormRowNum = ref(3)
 const incomeAndOutcomeCols = ref([
   { prop: 'pg', label: '专家课酬', format: 'amount', width: 120 },
   { prop: 'ph', label: '方案费', format: 'amount', width: 120 },
@@ -350,7 +453,32 @@ const incomeAndOutcomeCols = ref([
     width: 200,
   },
 ])
-const searchInfo = ref({})
+// todo xiubug.
+const searchInfo = ref({
+  page: 1,
+  pageSize: 10,
+  name: '',
+  categories: '',
+  projectCode: '',
+  createdDateRange: undefined,
+  trainStartDateRange: undefined,
+  contractStartDateRange: undefined,
+  client: [
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+  ],
+  landingAgency: [
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+  ],
+  partner: [
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+  ],
+})
 const manageSystemSettingID = ref(1)
 
 // 预算和支出的索引
@@ -452,11 +580,36 @@ const getSummries = (param) => {
 }
 // 重置
 const onReset = () => {
-  searchInfo.value = {}
+  searchInfo.value = {
+    page: 1,
+    pageSize: 10,
+    name: '',
+    categories: '',
+    projectCode: '',
+    createdDateRange: undefined,
+    trainStartDateRange: undefined,
+    contractStartDateRange: undefined,
+    client: [
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+    ],
+    landingAgency: [
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+    ],
+    partner: [
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+    ],
+  }
 }
 
 // 搜索
 const onSubmit = () => {
+  // date l and r
   page.value = 1
   pageSize.value = 10
   getTableData()
@@ -476,10 +629,12 @@ const handleCurrentChange = (val) => {
 
 // 查询
 const getTableData = async() => {
+  // 把所有查询的参数结合到一个对象中。
+  searchInfo.value.page = page.value
+  searchInfo.value.pageSize = pageSize.value
+  console.log(searchInfo.value)
   const table = await getProjectList({
-    page: page.value,
-    pageSize: pageSize.value,
-    ...searchInfo.value,
+    searchInfo: JSON.stringify(searchInfo.value),
   })
   if (table.code === 0) {
     tableData.value = table.data.list
@@ -588,4 +743,8 @@ const deleteProjectFunc = async(row) => {
 }
 </script>
 
-<style></style>
+<style>
+.el-form-item {
+  margin-bottom: 0;
+}
+</style>

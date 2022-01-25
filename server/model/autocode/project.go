@@ -40,9 +40,9 @@ func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
 
 // AmountObj 结构体是一个金额对象
 type AmountObj struct {
-	Name   string          `json:"name"`
-	Radio  decimal.Decimal `json:"radio"`
-	Amount decimal.Decimal `json:"amount"`
+	Name   string
+	Radio  decimal.Decimal
+	Amount decimal.Decimal
 }
 
 // AmountJSONArr 结构体是一个金额对象json数组
@@ -70,12 +70,6 @@ type Project struct {
 	ContractNum    string `json:"contractNum" form:"contractNum" gorm:"column:contract_num;comment:合同编号;size:200;"`
 	Remark         string `json:"remark" form:"remark" gorm:"column:remark;comment:备注;size:200;"`
 
-	CreatedDate       *time.Time `json:"createdDate" form:"createdDate" gorm:"column:created_date;comment:备案申请日期;"`
-	ContractStartDate *time.Time `json:"contractStartDate" form:"contractStartDate" gorm:"column:contract_start_date;comment:合同开始时间;"`
-	ContractEndDate   *time.Time `json:"contractEndDate" form:"contractEndDate" gorm:"column:contract_end_date;comment:合同结束时间;"`
-	TrainStartDate    *time.Time `json:"trainStartDate" form:"trainStartDate" gorm:"column:train_start_date;comment:培训开始时间;"`
-	TrainEndDate      *time.Time `json:"trainEndDate" form:"trainEndDate" gorm:"column:train_end_date;comment:培训结束时间;"`
-
 	ProjectAmount decimal.Decimal `json:"projectAmount" sql:"type:decimal(12,2);" form:"projectAmount" gorm:"column:project_amount;comment:项目应收费用;"`
 	PaidAmount    decimal.Decimal `json:"paidAmount" sql:"type:decimal(12,2);" form:"paidAmount" gorm:"column:paid_amount;comment:已到账费用;"`
 	UnpaidAmount  decimal.Decimal `json:"unpaidAmount" sql:"type:decimal(12,2);" form:"unpaidAmount" gorm:"column:unpaid_amount;comment:未到账金额;"`
@@ -89,20 +83,20 @@ type Project struct {
 	WAmount decimal.Decimal `json:"wAmount" sql:"type:decimal(12,2);" form:"wAmount" gorm:"column:w_amount;comment:福利;"`
 	CAmount decimal.Decimal `json:"cAmount" sql:"type:decimal(12,2);" form:"cAmount" gorm:"column:c_amount;comment:课酬;"`
 
-	TrainNumOfPerson *int `json:"trainNumOfPerson" form:"trainNumOfPerson" gorm:"column:train_num_of_person;comment:培训人数;size:19;"`
-	TrainTime        *int `json:"trainTime" form:"trainTime" gorm:"column:train_time;comment:培训学时数;size:19;"`
+	TrainNumOfPerson int `json:"trainNumOfPerson" form:"trainNumOfPerson" gorm:"column:train_num_of_person;comment:培训人数;size:19;"`
+	TrainTime        int `json:"trainTime" form:"trainTime" gorm:"column:train_time;comment:培训学时数;size:19;"`
 
-	Client        *AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
-	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
-	Partner       *AmountJSONArr `json:"partner" form:"partner" gorm:"type:json;column:partner;comment:技术方;"`
+	Client        *AmountJSONArr `json:"client" form:"client" validate:"required" gorm:"type:json;column:client;comment:委托方;"`
+	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" validate:"required" gorm:"type:json;column:landing_agency;comment:落地机构;"`
+	Partner       *AmountJSONArr `json:"partner" form:"partner" validate:"required" gorm:"type:json;column:partner;comment:技术方;"`
 
-	IncomeAndOutcome *IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
+	IncomeAndOutcome *IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" validate:"required" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
 
-	// Client          string `json:"client" form:"client" gorm:"column:client;comment:委托方;"`
-	// LandingAgency   string `json:"landingAgency" form:"landingAgency" gorm:"column:landing_agency;comment:落地机构;"`
-	// Partners        string `json:"partners" form:"partners" gorm:";column:partners;comment:技术方;"`
-	// SDWCAmount      string `json:"sDWCAmount" form:"sDWCAmount" gorm:";column:s_d_w_c_amount;comment:学校管理费、发展基金、福利、课酬;size:191;"`
-	// IncomeAndOutput string `json:"incomeAndOutput" form:"incomeAndOutput" gorm:";column:income_and_output;comment:预算和支出（根据项目对应的收入和支出流水汇总）;size:191;"`
+	CreatedDate       time.Time `json:"createdDate" form:"createdDate" validate:"required" gorm:"type:date;column:created_date;comment:备案申请日期;"`
+	ContractStartDate time.Time `json:"contractStartDate" form:"contractStartDate" gorm:"type:date;column:contract_start_date;comment:合同开始时间;"`
+	ContractEndDate   time.Time `json:"contractEndDate" form:"contractEndDate" gorm:"type:date;column:contract_end_date;comment:合同结束时间;"`
+	TrainStartDate    time.Time `json:"trainStartDate" form:"trainStartDate" gorm:"type:date;column:train_start_date;comment:培训开始时间;"`
+	TrainEndDate      time.Time `json:"trainEndDate" form:"trainEndDate" gorm:"type:date;column:train_end_date;comment:培训结束时间;"`
 }
 
 // TableName Project 表名

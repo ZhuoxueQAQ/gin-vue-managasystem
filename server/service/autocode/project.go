@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"log"
 )
 
 type ProjectService struct {
@@ -14,6 +15,7 @@ type ProjectService struct {
 // CreateProject 创建Project记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) CreateProject(project autocode.Project) (err error) {
+	log.Println(project)
 	err = global.GVA_DB.Create(&project).Error
 	return err
 }
@@ -50,13 +52,16 @@ func (projectService *ProjectService) GetProject(id uint) (err error, project au
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.ProjectSearch) (err error, list interface{},
 	total int64) {
-	limit := info.PageSize
-	offset := info.PageSize * (info.Page - 1)
+
 	// 创建db
 	db := global.GVA_DB.Model(&autocode.Project{})
+	// 分页参数
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
 	var projects []autocode.Project
-	// 如果有条件搜索 下方会自动创建搜索语句
+
 	// todo 当筛选条件改变时才筛选（pagesize=1？）
+
 	if info.Name != "" {
 		db = db.Where("name LIKE ?", "%"+info.Name+"%")
 	}
@@ -66,35 +71,48 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	if info.ProjectCode != "" {
 		db = db.Where("project_code LIKE ?", "%"+info.ProjectCode+"%")
 	}
-	// date
-	if info.CreatedDate != nil {
-		db = db.Where("created_date >= ?", info.CreatedDate)
+	// todo date
+	for index, date := range info.CreatedDateRange {
+		query := "created_date >= ?"
+		if index == 1 {
+			query = "created_date <= ?"
+		}
+		db = db.Where(query, date)
 	}
-	if info.ContractStartDate != nil {
-		db = db.Where("contract_start_date >= ?", info.ContractStartDate)
+	for index, date := range info.ContractStartDateRange {
+		// todo 日期变成范围查询
+		query := "contract_start_date >= ?"
+		if index == 1 {
+			query = "contract_start_date <= ?"
+		}
+		db = db.Where(query, date)
 	}
-	if info.TrainStartDate != nil {
-		db = db.Where("train_start_date >= ?", info.TrainStartDate)
+	for index, date := range info.TrainStartDateRange {
+		query := "train_start_date >= ?"
+		if index == 1 {
+			query = "train_start_date <= ?"
+		}
+		db = db.Where(query, date)
 	}
-	// todo 日期右边界
 
-	// 委托方、落地机构和技术方查询
-	if info.Client != nil {
-		for index, val := range *(info.Client) {
+	// 根据委托方、落地机构和技术方的名字筛选
+	// todo 修复bug
+	for index, val := range *(info.Client) {
+		if val.Name != "" {
 			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val)
+			db = db.Where(query, val.Name)
 		}
 	}
-	if info.LandingAgency != nil {
-		for index, val := range *(info.LandingAgency) {
-			query := fmt.Sprintf("landing_agency->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val)
+	for index, val := range *(info.LandingAgency) {
+		if val.Name != "" {
+			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
+			db = db.Where(query, val.Name)
 		}
 	}
-	if info.Partner != nil {
-		for index, val := range *(info.LandingAgency) {
-			query := fmt.Sprintf("partners->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val)
+	for index, val := range *(info.Partner) {
+		if val.Name != "" {
+			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
+			db = db.Where(query, val.Name)
 		}
 	}
 	// total 是已经筛选的数据的条数
