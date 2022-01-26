@@ -36,7 +36,7 @@
           <el-col :span="8">
             <el-form-item label="备案申请日期" label-width="100px">
               <el-date-picker
-                v-model="searchInfo.createdDateL"
+                v-model="searchInfo.createdDateRange"
                 format="YYYY-MM-DD"
                 :style="{ width: '100%' }"
                 placeholder="请输入待匹配文本"
@@ -51,7 +51,7 @@
           <el-col :span="8">
             <el-form-item label="合同开始时间">
               <el-date-picker
-                v-model="searchInfo.contractStartDateL"
+                v-model="searchInfo.contractStartDateRange"
                 format="YYYY-MM-DD"
                 :style="{ width: '100%' }"
                 placeholder="请输入待匹配文本"
@@ -66,7 +66,7 @@
           <el-col :span="8">
             <el-form-item label="培训开始时间">
               <el-date-picker
-                v-model="searchInfo.trainStartDateL"
+                v-model="searchInfo.trainStartDateRange"
                 format="YYYY-MM-DD"
                 :style="{ width: '100%' }"
                 placeholder="请输入待匹配文本"
@@ -632,7 +632,6 @@ const getTableData = async() => {
   // 把所有查询的参数结合到一个对象中。
   searchInfo.value.page = page.value
   searchInfo.value.pageSize = pageSize.value
-  console.log(searchInfo.value)
   const table = await getProjectList({
     searchInfo: JSON.stringify(searchInfo.value),
   })
@@ -641,6 +640,7 @@ const getTableData = async() => {
     total.value = table.data.total
     page.value = table.data.page
     pageSize.value = table.data.pageSize
+    console.log(tableData.value)
   }
 }
 

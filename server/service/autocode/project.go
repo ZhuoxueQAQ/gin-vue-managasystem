@@ -81,9 +81,9 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	}
 	for index, date := range info.ContractStartDateRange {
 		// todo 日期变成范围查询
-		query := "contract_start_date >= ?"
+		query := "contract_start_date > ?"
 		if index == 1 {
-			query = "contract_start_date <= ?"
+			query = "contract_start_date < ?"
 		}
 		db = db.Where(query, date)
 	}
@@ -99,20 +99,20 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	// todo 修复bug
 	for index, val := range *(info.Client) {
 		if val.Name != "" {
-			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val.Name)
+			query := fmt.Sprintf("client->'$[%v].name' LIKE ? ", index)
+			db = db.Where(query, "%"+val.Name+"%")
 		}
 	}
 	for index, val := range *(info.LandingAgency) {
 		if val.Name != "" {
-			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val.Name)
+			query := fmt.Sprintf("landing_agency->'$[%v].name' LIKE ? ", index)
+			db = db.Where(query, "%"+val.Name+"%")
 		}
 	}
 	for index, val := range *(info.Partner) {
 		if val.Name != "" {
-			query := fmt.Sprintf("client->'$[%v].Name = (?)'", index)
-			db = db.Where(query, val.Name)
+			query := fmt.Sprintf("partner->'$[%v].name' LIKE ? ", index)
+			db = db.Where(query, "%"+val.Name+"%")
 		}
 	}
 	// total 是已经筛选的数据的条数

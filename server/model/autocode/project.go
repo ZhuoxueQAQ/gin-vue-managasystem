@@ -40,9 +40,9 @@ func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
 
 // AmountObj 结构体是一个金额对象
 type AmountObj struct {
-	Name   string
-	Radio  decimal.Decimal
-	Amount decimal.Decimal
+	Name   string          `json:"name"`
+	Radio  decimal.Decimal `json:"radio"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 // AmountJSONArr 结构体是一个金额对象json数组
@@ -86,9 +86,9 @@ type Project struct {
 	TrainNumOfPerson int `json:"trainNumOfPerson" form:"trainNumOfPerson" gorm:"column:train_num_of_person;comment:培训人数;size:19;"`
 	TrainTime        int `json:"trainTime" form:"trainTime" gorm:"column:train_time;comment:培训学时数;size:19;"`
 
-	Client        *AmountJSONArr `json:"client" form:"client" validate:"required" gorm:"type:json;column:client;comment:委托方;"`
-	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" validate:"required" gorm:"type:json;column:landing_agency;comment:落地机构;"`
-	Partner       *AmountJSONArr `json:"partner" form:"partner" validate:"required" gorm:"type:json;column:partner;comment:技术方;"`
+	Client        *AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
+	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
+	Partner       *AmountJSONArr `json:"partner" form:"partner" gorm:"type:json;column:partner;comment:技术方;"`
 
 	IncomeAndOutcome *IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" validate:"required" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
 
