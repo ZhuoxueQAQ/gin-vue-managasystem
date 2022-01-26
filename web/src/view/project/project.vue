@@ -1,189 +1,279 @@
 /* eslint-disable vue/no-v-for-template-key */
 <template>
   <div>
+    <!-- 表格按钮组 -->
     <div class="gva-search-box">
-      <el-form :model="searchInfo" size="medium" label-width="100px">
-        <el-row>
-          <el-col :span="8">
-            <el-form-item label="项目名称" label-width="100px">
-              <el-input
-                v-model="searchInfo.name"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="项目类别" label-width="100px">
-              <el-input
-                v-model="searchInfo.categories"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="项目码" label-width="100px">
-              <el-input
-                v-model="searchInfo.projectCode"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="8">
-            <el-form-item label="备案申请日期" label-width="100px">
-              <el-date-picker
-                v-model="searchInfo.createdDateRange"
-                format="YYYY-MM-DD"
-                :style="{ width: '100%' }"
-                placeholder="请输入待匹配文本"
-                type="daterange"
-                unlink-panels
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="合同开始时间">
-              <el-date-picker
-                v-model="searchInfo.contractStartDateRange"
-                format="YYYY-MM-DD"
-                :style="{ width: '100%' }"
-                placeholder="请输入待匹配文本"
-                type="daterange"
-                unlink-panels
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="培训开始时间">
-              <el-date-picker
-                v-model="searchInfo.trainStartDateRange"
-                format="YYYY-MM-DD"
-                :style="{ width: '100%' }"
-                placeholder="请输入待匹配文本"
-                type="daterange"
-                unlink-panels
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col
-            v-for="index in maxFormRowNum"
-            :key="'client' + index"
-            :span="24 / maxFormRowNum"
+      <div class="box-top-line gva-btn-list">
+        <div>
+          <span>表格工具栏：</span>
+        </div>
+        <div>
+          <el-button
+            size="mini"
+            type="primary"
+            icon="plus"
+            @click="createProjectFunc"
+          >新增</el-button>
+          <el-popover
+            v-model:visible="deleteVisible"
+            placement="top"
+            width="160"
           >
-            <el-form-item
-              :label="`委托方${String(index)}名称`"
-              label-width="100px"
-            >
-              <el-input
-                v-model="searchInfo.client[index - 1].name"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col
-            v-for="index in maxFormRowNum"
-            :key="'landingAgency' + index"
-            :span="24 / maxFormRowNum"
-          >
-            <el-form-item
-              :label="`落地方${String(index)}名称`"
-              label-width="100px"
-            >
-              <el-input
-                v-model="searchInfo.landingAgency[index - 1].name"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col
-            v-for="index in maxFormRowNum"
-            :key="'partner' + index"
-            :span="24 / maxFormRowNum"
-          >
-            <el-form-item
-              :label="`技术方${String(index)}名称`"
-              label-width="100px"
-            >
-              <el-input
-                v-model="searchInfo.partner[index - 1].name"
-                placeholder="请输入待匹配文本"
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :offset="8">
-            <el-form-item>
+            <p>确定要删除吗？</p>
+            <div style="text-align: right; margin-top: 8px">
+              <el-button
+                size="mini"
+                type="text"
+                @click="deleteVisible = false"
+              >取消</el-button>
               <el-button
                 size="mini"
                 type="primary"
-                icon="search"
-                @click="onSubmit"
-              >查询</el-button>
+                @click="onDelete"
+              >确定</el-button>
+            </div>
+            <template #reference>
               <el-button
+                icon="delete"
                 size="mini"
-                icon="refresh"
-                @click="onReset"
-              >重置</el-button>
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
+                type="danger"
+                style="margin-center: 10px"
+                :disabled="!multipleSelection.length"
+              >删除</el-button>
+            </template>
+          </el-popover>
+          <el-button
+            size="mini"
+            type="primary"
+            icon="search"
+            @click="handleShowSearchBox"
+          >
+            搜索
+          </el-button>
+          <el-button size="mini" type="primary" icon="download">
+            导出
+          </el-button>
+          <el-button
+            size="mini"
+            type="primary"
+            icon="setting"
+            @click="handleShowColCheckGroupBox"
+          >
+            列筛选
+          </el-button>
+        </div>
+      </div>
     </div>
-    <div class="gva-table-box">
-      <div class="gva-btn-list">
-        <el-button
-          size="mini"
-          type="primary"
-          icon="plus"
-          @click="openDialog"
-        >新增</el-button>
-        <el-popover v-model:visible="deleteVisible" placement="top" width="160">
-          <p>确定要删除吗？</p>
-          <div style="text-align: right; margin-top: 8px">
-            <el-button
-              size="mini"
-              type="text"
-              @click="deleteVisible = false"
-            >取消</el-button>
+    <div v-if="isShowSearchBox">
+      <div class="gva-search-box">
+        <div class="box-top-line">
+          <div>
+            <span>按条件查询表格数据：</span>
+          </div>
+          <div>
             <el-button
               size="mini"
               type="primary"
-              @click="onDelete"
-            >确定</el-button>
-          </div>
-          <template #reference>
+              icon="search"
+              @click="onSubmit"
+            >查询</el-button>
             <el-button
-              icon="delete"
               size="mini"
-              style="margin-center: 10px"
-              :disabled="!multipleSelection.length"
-            >删除</el-button>
-          </template>
-        </el-popover>
+              icon="refresh"
+              @click="onReset"
+            >重置</el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              icon="circle-close"
+              @click="handleHideSearchBox"
+            >隐藏</el-button>
+          </div>
+        </div>
+        <el-form
+          v-if="isShowSearchBox"
+          :model="searchInfo"
+          size="medium"
+          label-width="100px"
+        >
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="项目名称" label-width="100px">
+                <el-input
+                  v-model="searchInfo.name"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="项目类别" label-width="100px">
+                <el-input
+                  v-model="searchInfo.categories"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="项目码" label-width="100px">
+                <el-input
+                  v-model="searchInfo.projectCode"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="8">
+              <el-form-item label="备案申请日期" label-width="100px">
+                <el-date-picker
+                  v-model="searchInfo.createdDateRange"
+                  format="YYYY-MM-DD"
+                  :style="{ width: '100%' }"
+                  placeholder="请输入待匹配文本"
+                  type="daterange"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="合同开始时间">
+                <el-date-picker
+                  v-model="searchInfo.contractStartDateRange"
+                  format="YYYY-MM-DD"
+                  :style="{ width: '100%' }"
+                  placeholder="请输入待匹配文本"
+                  type="daterange"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="8">
+              <el-form-item label="培训开始时间">
+                <el-date-picker
+                  v-model="searchInfo.trainStartDateRange"
+                  format="YYYY-MM-DD"
+                  :style="{ width: '100%' }"
+                  placeholder="请输入待匹配文本"
+                  type="daterange"
+                  unlink-panels
+                  range-separator="至"
+                  start-placeholder="开始日期"
+                  end-placeholder="结束日期"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col
+              v-for="index in maxFormRowNum"
+              :key="'client' + index"
+              :span="24 / maxFormRowNum"
+            >
+              <el-form-item
+                :label="`委托方${String(index)}名称`"
+                label-width="100px"
+              >
+                <el-input
+                  v-model="searchInfo.client[index - 1].name"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col
+              v-for="index in maxFormRowNum"
+              :key="'landingAgency' + index"
+              :span="24 / maxFormRowNum"
+            >
+              <el-form-item
+                :label="`落地方${String(index)}名称`"
+                label-width="100px"
+              >
+                <el-input
+                  v-model="searchInfo.landingAgency[index - 1].name"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col
+              v-for="index in maxFormRowNum"
+              :key="'partner' + index"
+              :span="24 / maxFormRowNum"
+            >
+              <el-form-item
+                :label="`技术方${String(index)}名称`"
+                label-width="100px"
+              >
+                <el-input
+                  v-model="searchInfo.partner[index - 1].name"
+                  placeholder="请输入待匹配文本"
+                  :style="{ width: '100%' }"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
       </div>
+    </div>
+
+    <!-- 列选择显示 -->
+    <div v-if="isShowColCheckGroupBox">
+      <div class="gva-search-box">
+        <div class="box-top-line">
+          <div>
+            <span style="align: center">表格列显示设置：</span>
+          </div>
+          <div>
+            <el-button
+              size="mini"
+              type="primary"
+              icon="check"
+              @click="updateManageSystemSettingFunc"
+            >保存</el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              icon="circle-close"
+              @click="handleHideColCheckGroupBox"
+            >隐藏</el-button>
+          </div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap">
+          <!-- 一堆checkbox -->
+          <div
+            v-for="(col, index) in tableCols"
+            :key="'checkbox' + '-' + index"
+          >
+            <div v-if="col.colType === 'multi'">
+              <el-checkbox
+                v-for="(show, showIndex) in col.showList"
+                :key="col.prop + '-' + showIndex"
+                v-model="col.showList[showIndex]"
+                :label="col.label + String(showIndex + 1)"
+              />
+            </div>
+            <div v-else>
+              <el-checkbox v-model="col.show" :label="col.label" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="gva-table-box">
       <el-table
         v-if="tableCols !== undefined && tableData !== undefined"
         ref="multipleTable"
@@ -240,11 +330,7 @@
                     :width="s.width"
                   >
                     <template #default="scope">
-                      <span
-                        v-if="
-                          scope.row[col.prop][showIndex][s.prop] != undefined
-                        "
-                      >
+                      <span v-if="scope.row[col.prop][showIndex] != undefined">
                         {{
                           formatTableVal(
                             scope.row[col.prop][showIndex][s.prop],
@@ -406,7 +492,10 @@ import {
   deleteProjectByIds,
   getProjectList,
 } from '@/api/project'
-import { findManageSystemSetting } from '@/api/manageSystemSetting.js'
+import {
+  findManageSystemSetting,
+  updateManageSystemSetting,
+} from '@/api/manageSystemSetting.js'
 
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
@@ -424,6 +513,8 @@ const total = ref(0)
 const pageSize = ref(10)
 const tableData = ref([])
 const tableCols = ref([])
+const isShowSearchBox = ref(false)
+const isShowColCheckGroupBox = ref(false)
 // 委托方、落地机构和合作方的最大个数
 const maxFormRowNum = ref(3)
 const incomeAndOutcomeCols = ref([
@@ -537,7 +628,8 @@ const getSummries = (param) => {
           if (show) {
             col.sub.forEach((s) => {
               const values = data.map((item) => {
-                return item[col.prop][i][s.prop] === undefined
+                // 当显示的multi项较多时，对multi比较少的数据，越界访问会导致undefined
+                return item[col.prop][i] === undefined
                   ? NaN
                   : item[col.prop][i][s.prop]
               })
@@ -578,7 +670,22 @@ const getSummries = (param) => {
   sums.unshift('合计', '', '')
   return sums
 }
-// 重置
+
+// 显示|隐藏搜索框
+const handleShowSearchBox = () => {
+  isShowSearchBox.value = true
+}
+const handleHideSearchBox = () => {
+  isShowSearchBox.value = false
+}
+// 显示|隐藏列筛选
+const handleShowColCheckGroupBox = () => {
+  isShowColCheckGroupBox.value = true
+}
+const handleHideColCheckGroupBox = () => {
+  isShowColCheckGroupBox.value = false
+}
+// 重置筛选条件
 const onReset = () => {
   searchInfo.value = {
     page: 1,
@@ -640,7 +747,6 @@ const getTableData = async() => {
     total.value = table.data.total
     page.value = table.data.page
     pageSize.value = table.data.pageSize
-    console.log(tableData.value)
   }
 }
 
@@ -717,6 +823,12 @@ const onDelete = async() => {
   }
 }
 
+const createProjectFunc = async() => {
+  router.push({
+    name: 'projectForm',
+  })
+}
+
 // 更新行
 const updateProjectFunc = async(row) => {
   router.push({
@@ -741,10 +853,38 @@ const deleteProjectFunc = async(row) => {
     getTableData()
   }
 }
+
+// 更新系统设置
+const updateManageSystemSettingFunc = async() => {
+  // todo ：这里只传projectCol，gorm只更新一个字段
+  const res = await updateManageSystemSetting({
+    ID: 1, // 必须是1
+    projectTableCols: tableCols.value,
+    incomeStreamTableCols: [],
+    outcomeStreamTableCols: [],
+  })
+  if (res.code === 0) {
+    ElMessage({
+      colType: 'success',
+      message: '表格列显示字段配置保存成功',
+    })
+    getTableCols()
+    getTableData()
+  }
+}
 </script>
 
-<style>
+<style scoped>
 .el-form-item {
   margin-bottom: 0;
+}
+.box-top-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+}
+.box-top-line span {
+  font-size: 16px;
 }
 </style>

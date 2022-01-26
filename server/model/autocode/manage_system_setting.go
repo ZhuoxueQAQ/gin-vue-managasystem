@@ -36,7 +36,7 @@ func (a *TableCols) Scan(input interface{}) error {
 // 如果含有time.Time 请自行import time包
 type ManageSystemSetting struct {
 	global.GVA_MODEL
-	ProjectTableCols       TableCols `json:"projectTableCols" form:"projectTableCol" gorm:"type:json;column:project_table_cols;comment:培训项目表格模板;"`
+	ProjectTableCols       TableCols `json:"projectTableCols" form:"projectTableCols" gorm:"type:json;column:project_table_cols;comment:培训项目表格模板;"`
 	IncomeStreamTableCols  TableCols `json:"incomeStreamTableCols" form:"incomeStreamTableCols" gorm:"type:json;column:income_stream_table_cols;comment:收入流水表格模板;"`
 	OutcomeStreamTableCols TableCols `json:"outcomeStreamTableCols" form:"outcomeStreamTableCols" gorm:"type:json;column:outcome_stream_table_cols;comment:支出流水表格模板;"`
 }

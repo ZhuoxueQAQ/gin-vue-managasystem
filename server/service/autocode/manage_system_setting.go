@@ -32,9 +32,20 @@ func (manageSystemSettingService *ManageSystemSettingService) DeleteManageSystem
 }
 
 // UpdateManageSystemSetting 更新ManageSystemSetting记录
+// 只更新三个字段中的一个
 // Author [piexlmax](https://github.com/piexlmax)
 func (manageSystemSettingService *ManageSystemSettingService) UpdateManageSystemSetting(manageSystemSetting autocode.ManageSystemSetting) (err error) {
-	err = global.GVA_DB.Save(&manageSystemSetting).Error
+	var query string
+	if len(manageSystemSetting.ProjectTableCols) > 0 {
+		query = "project_table_cols"
+	}
+	if len(manageSystemSetting.IncomeStreamTableCols) > 0 {
+		query = "income_stream_table_cols"
+	}
+	if len(manageSystemSetting.OutcomeStreamTableCols) > 0 {
+		query = "outcome_stream_table_cols"
+	}
+	err = global.GVA_DB.Model(&manageSystemSetting).Select(query).Updates(manageSystemSetting).Error
 	return err
 }
 
