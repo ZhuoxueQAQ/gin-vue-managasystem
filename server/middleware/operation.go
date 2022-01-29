@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
@@ -50,10 +51,10 @@ func OperationRecord() gin.HandlerFunc {
 			UserID: userId,
 		}
 		// 存在某些未知错误 TODO
-		//values := c.Request.Header.Values("content-type")
-		//if len(values) >0 && strings.Contains(values[0], "boundary") {
-		//	record.Body = "file"
-		//}
+		values := c.Request.Header.Values("content-type")
+		if len(values) > 0 && strings.Contains(values[0], "boundary") {
+			record.Body = "file"
+		}
 		writer := responseBodyWriter{
 			ResponseWriter: c.Writer,
 			body:           &bytes.Buffer{},

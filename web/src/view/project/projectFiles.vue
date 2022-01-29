@@ -393,7 +393,6 @@ const uploadFile = async(file) => {
     }
     // 上传成功切片个数
     let uploadedChunks = 0
-    console.log(formDataList.length)
     // 把前面得到的切片数组一个个上传上去
     formDataList &&
       formDataList.forEach((item) => {
@@ -405,16 +404,16 @@ const uploadFile = async(file) => {
           const spark = new SparkMD5.ArrayBuffer()
           spark.append(e.target.result)
           item.formData.append('chunkMd5', spark.end()) // 获取当前切片md5 后端用于验证切片完整性
+
           // 上传到db
           const fileRe = await uploadProjectChunk(item.formData)
           if (fileRe.code !== 0) {
             return
           }
           uploadedChunks++
-          console.log('uploadedChunks', uploadedChunks)
           // 更新百分数
           file.percentage = parseFloat(
-            ((uploadedChunks + 1) / formDataList.length).toFixed(2)
+            ((uploadedChunks * 100) / formDataList.length).toFixed(2)
           )
           if (uploadedChunks === formDataList.length) {
             // 切片传完以后 合成文件

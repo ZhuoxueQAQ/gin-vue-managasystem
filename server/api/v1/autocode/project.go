@@ -206,10 +206,10 @@ func (projectApi *ProjectApi) UploadProjectChunk(c *gin.Context) {
 }
 
 func (projectApi *ProjectApi) MergeProjectFileChunk(c *gin.Context) {
-	fileMd5 := c.Request.FormValue("fileMd5")
-	fileName := c.Request.FormValue("fileName")
-	projectID := c.Request.FormValue("projectID")
-	fileTypeID := c.Request.FormValue("fileTypeID")
+	fileMd5 := c.Query("fileMd5")
+	fileName := c.Query("fileName")
+	projectID := c.Query("projectID")
+	fileTypeID := c.Query("fileTypeID")
 	// chunkTotal, _ := strconv.Atoi(c.Request.FormValue("chunkTotal"))
 	err, _ := utils.MergeChunk(fileName, fileMd5, projectID, fileTypeID)
 	if err != nil {

@@ -108,6 +108,7 @@ export const uploadProjectChunk = (data) => {
   return service({
     url: '/project/uploadProjectFileChunk',
     method: 'post',
+    headers: { 'Content-Type': 'multipart/form-data' },
     data
   })
 }
@@ -120,10 +121,10 @@ export const uploadProjectChunk = (data) => {
 // @Param data query model.Project true "合并分片"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
 // @Router /project/uploadProjectFile [post]
-export const mergeProjectFileChunk = (data) => {
+export const mergeProjectFileChunk = (params) => {
   return service({
     url: '/project/mergeProjectFileChunk',
     method: 'post',
-    data
+    params
   })
 }
