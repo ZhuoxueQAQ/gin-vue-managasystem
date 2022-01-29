@@ -51,6 +51,24 @@ export const percentageToNumber = (str) => {
   return parseFloat(str.split('%').join(''))
 }
 
+export const formatFileSize = (size) => {
+  if (size < 0) {
+    return 'invalid size!'
+  }
+  // 1024^x = y
+  const pow = Math.floor(Math.log(size) / Math.log(1024))
+  switch (pow) {
+    case 0:
+      return size.toFixed(2) + 'B'
+    case 1:
+      return (size / 1024).toFixed(2) + 'KB'
+    case 2:
+      return (size / Math.pow(1024, 2)).toFixed(2) + 'MB'
+    default:
+      return (size / Math.pow(1024, 3)).toFixed(2) + 'GB'
+  }
+}
+
 export const formatTableVal = (value, format) => {
   try {
     switch (format) {
@@ -60,6 +78,8 @@ export const formatTableVal = (value, format) => {
         return numberToThousands(value)
       case 'radio':
         return numberToPercentage(value)
+      case 'fileSize':
+        return formatFileSize(value)
       default:
         return value
     }

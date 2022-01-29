@@ -2,15 +2,20 @@ package autocode
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autocodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/service"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"io/ioutil"
+	"mime/multipart"
 	"net/url"
+	"strconv"
 )
 
 type ProjectApi struct {
@@ -148,4 +153,69 @@ func (projectApi *ProjectApi) GetProjectList(c *gin.Context) {
 			PageSize: info.PageSize,
 		}, "获取成功", c)
 	}
+}
+
+// uploadProjectFile 分片上传附件
+// @Tags Project
+// @Summary 分片上传附件
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body autocode.Project true "分片上传附件"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /project/uploadProjectFile [post]
+
+func (projectApi *ProjectApi) UploadProjectChunk(c *gin.Context) {
+	fileMd5 := c.Request.FormValue("fileMd5")
+	fileName := c.Request.FormValue("fileName")
+	chunkMd5 := c.Request.FormValue("chunkMd5")
+	chunkNumber, _ := strconv.Atoi(c.Request.FormValue("chunkNumber"))
+	// chunkTotal, _ := strconv.Atoi(c.Request.FormValue("chunkTotal"))
+	_, FileHeader, err := c.Request.FormFile("file")
+	if err != nil {
+		global.GVA_LOG.Error("接收文件失败!", zap.Error(err))
+		response.FailWithMessage("接收文件失败", c)
+		return
+	}
+	f, err := FileHeader.Open()
+	if err != nil {
+		global.GVA_LOG.Error("文件读取失败!", zap.Error(err))
+		response.FailWithMessage("文件读取失败", c)
+		return
+	}
+	defer func(f multipart.File) {
+		err := f.Close()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}(f)
+	cen, _ := ioutil.ReadAll(f)
+	if !utils.CheckMd5(cen, chunkMd5) {
+		global.GVA_LOG.Error("检查分片md5失败!", zap.Error(err))
+		response.FailWithMessage("检查分片md5失败", c)
+		return
+	}
+	err, _ = utils.MakeFileChunk(cen, fileName, chunkNumber, fileMd5)
+	if err != nil {
+		global.GVA_LOG.Error("创建分片文件失败!", zap.Error(err))
+		response.FailWithMessage("创建分片文件失败", c)
+		return
+	}
+	response.OkWithMessage("切片创建成功", c)
+
+}
+
+func (projectApi *ProjectApi) MergeProjectFileChunk(c *gin.Context) {
+	fileMd5 := c.Request.FormValue("fileMd5")
+	fileName := c.Request.FormValue("fileName")
+	projectID := c.Request.FormValue("projectID")
+	fileTypeID := c.Request.FormValue("fileTypeID")
+	// chunkTotal, _ := strconv.Atoi(c.Request.FormValue("chunkTotal"))
+	err, _ := utils.MergeChunk(fileName, fileMd5, projectID, fileTypeID)
+	if err != nil {
+		global.GVA_LOG.Error("合并分片文件失败!", zap.Error(err))
+		response.FailWithMessage("合并分片文件失败", c)
+		return
+	}
+	response.OkWithMessage("合并分片成功", c)
 }

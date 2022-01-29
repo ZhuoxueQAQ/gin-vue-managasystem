@@ -3,6 +3,7 @@ package utils
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -54,7 +55,8 @@ func CheckMd5(content []byte, chunkMd5 string) (CanUpload bool) {
 //@return: error, string
 
 func makeFileContent(content []byte, fileName string, FileDir string, contentNumber int) (error, string) {
-	path := FileDir + fileName + "_" + strconv.Itoa(contentNumber)
+	tmp := fileName + "_" + strconv.Itoa(contentNumber)
+	path := filepath.Join(FileDir, tmp)
 	f, err := os.Create(path)
 	if err != nil {
 		return err, path
@@ -75,7 +77,7 @@ func makeFileContent(content []byte, fileName string, FileDir string, contentNum
 //@return: error, string
 
 func MakeFile(fileName string, FileMd5 string) (error, string) {
-	rd, err := ioutil.ReadDir(breakpointDir + FileMd5)
+	rd, err := ioutil.ReadDir(filepath.Join(breakpointDir, FileMd5))
 	if err != nil {
 		return err, finishDir + fileName
 	}

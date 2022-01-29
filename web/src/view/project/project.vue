@@ -458,6 +458,13 @@
             >变更</el-button>
             <el-button
               type="text"
+              icon="files"
+              size="small"
+              class="table-button"
+              @click="uploadProjectFilesFunc(scope.row)"
+            >附件</el-button>
+            <el-button
+              type="text"
               icon="delete"
               size="mini"
               @click="deleteRow(scope.row)"
@@ -826,6 +833,15 @@ const onDelete = async() => {
 const createProjectFunc = async() => {
   router.push({
     name: 'projectForm',
+  })
+}
+
+const uploadProjectFilesFunc = async(row) => {
+  router.push({
+    name: 'projectFiles',
+    query: {
+      id: row.ID,
+    },
   })
 }
 

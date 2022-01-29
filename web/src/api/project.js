@@ -95,3 +95,35 @@ export const getProjectList = (params) => {
     params
   })
 }
+
+// @Tags Project
+// @Summary 上传项目附件（分片）
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query model.Project true "上传项目附件（分片）"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
+// @Router /project/uploadProjectFile [post]
+export const uploadProjectChunk = (data) => {
+  return service({
+    url: '/project/uploadProjectFileChunk',
+    method: 'post',
+    data
+  })
+}
+
+// @Tags Project
+// @Summary 合并分片
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query model.Project true "合并分片"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
+// @Router /project/uploadProjectFile [post]
+export const mergeProjectFileChunk = (data) => {
+  return service({
+    url: '/project/mergeProjectFileChunk',
+    method: 'post',
+    data
+  })
+}
