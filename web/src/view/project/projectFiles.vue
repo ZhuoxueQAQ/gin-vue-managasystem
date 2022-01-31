@@ -82,7 +82,7 @@
     <!-- 选择某个类型的附件进行查看 -->
     <el-dialog
       v-model="isShowDialog"
-      :title="`选择某个类型的附件进行查看`"
+      :title="`选择该项目的某个类型的附件进行查看`"
       width="60%"
       center
       :show-close="false"
@@ -107,7 +107,7 @@
             label="文件描述"
             prop="discription"
             align="center"
-            width="650"
+            width="600"
           />
           <el-table-column align="center" label="操作" width="100">
             <template #default="scope">
@@ -221,7 +221,7 @@ export default {
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import SparkMD5 from 'spark-md5'
 
 import {
@@ -243,6 +243,8 @@ const fileTypeID = ref()
 const projectID = ref()
 // 上传文件的最大大小
 const maxSize = 200 * 1024 * 1024
+const uploadedNum = ref(0)
+const successUploadNum = ref(0)
 
 // =========== 表格控制部分 ===========
 const page = ref(1)
@@ -379,7 +381,6 @@ const handleFileChange = (file, fileList) => {
   if (file.status !== 'ready') {
     return
   }
-  console.log(file)
   // todo: check file size
   if (file.size > maxSize) {
     ElMessage.error(
@@ -387,11 +388,18 @@ const handleFileChange = (file, fileList) => {
     )
     fileList.pop()
   }
-  const existFile = fileList
+  let existFile = fileList
     .slice(0, fileList.length - 1)
     .find((f) => f.name === file.name)
   if (existFile) {
-    ElMessage.error('文件已存在！')
+    ElMessage.error(`文件：${file.name} 已在待上传列表中`)
+    fileList.pop()
+  }
+  existFile = projectFileRecordTableData.value.find(
+    (f) => f.fileName === file.name
+  )
+  if (existFile) {
+    ElMessage.error(`文件：${file.name} 已存在`)
     fileList.pop()
   }
   filesToBeUpload.value = fileList
@@ -467,6 +475,11 @@ const uploadFile = async(file) => {
               fileTypeID: fileTypeID.value,
             }
             const res = await mergeProjectFileChunk(params)
+            // 上传成功的切片
+            if (res.code === 0) {
+              ++successUploadNum.value
+            }
+            ++uploadedNum.value
           }
         }
         // 上传一个切片以后更新百分数
@@ -476,32 +489,44 @@ const uploadFile = async(file) => {
 
 // 异步上传多个项目文件
 const uploadProjectFilesFunc = async() => {
-  const res = await Promise.all(
+  await Promise.all(
     filesToBeUpload.value.map(async(file) => {
       // 分片上传
       await uploadFile(file)
     })
   )
-  console.log(res)
-  ElMessageBox.confirm(
-    `上传完成，已上传${res.length}/${filesToBeUpload.value.length}个文件`,
-    'success',
-    {
-      confirmButtonText: '查看附件',
-      cancelButtonText: '继续上传',
-      type: 'success',
-    }
-  )
-    .then(() => {
-      getTableData()
-      isShowUploadFilesDialog.value = false
-      filesToBeUpload.value = []
-    })
-    .catch(() => {
-      getTableData()
-      filesToBeUpload.value = []
-    })
 }
+// Get
+watch(uploadedNum, () => {
+  if (
+    uploadedNum.value === filesToBeUpload.value.length &&
+    uploadedNum.value !== 0
+  ) {
+    ElMessageBox.confirm(
+      `上传完成，已上传${successUploadNum.value}/${filesToBeUpload.value.length}个文件`,
+      'success',
+      {
+        confirmButtonText: '查看附件',
+        cancelButtonText: '继续上传',
+        type: 'success',
+      }
+    )
+      .then(() => {
+        getTableData()
+        isShowUploadFilesDialog.value = false
+        filesToBeUpload.value = []
+        successUploadNum.value = 0
+        uploadedNum.value = 0
+      })
+      .catch(() => {
+        getTableData()
+        filesToBeUpload.value = []
+        successUploadNum.value = 0
+        uploadedNum.value = 0
+      })
+  }
+})
+
 const saveAs = (data, fileName) => {
   const blob = new Blob([data])
   if ('download' in document.createElement('a')) {
