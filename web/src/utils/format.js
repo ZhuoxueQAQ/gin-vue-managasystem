@@ -8,10 +8,10 @@ export const formatBoolean = (bool) => {
     return ''
   }
 }
-export const formatDate = (time) => {
+export const formatDate = (time, pattern) => {
   if (time !== null && time !== '') {
     var date = new Date(time)
-    return formatTimeToStr(date, 'yyyy-MM-dd')
+    return formatTimeToStr(date, pattern)
   } else {
     return ''
   }
@@ -73,7 +73,9 @@ export const formatTableVal = (value, format) => {
   try {
     switch (format) {
       case 'date':
-        return myDateFormat(value)
+        return formatDate(value, 'yyyy-MM-dd')
+      case 'dateTime':
+        return formatDate(value, 'yyyy-MM-dd hh:mm:ss')
       case 'amount':
         return numberToThousands(value)
       case 'radio':

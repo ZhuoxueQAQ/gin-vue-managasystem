@@ -38,13 +38,17 @@
         ref="multipleTable"
         style="width: 100%"
         tooltip-effect="dark"
-        :data="projectFilesData"
+        :data="projectFileRecordTableData"
         row-key="ID"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column label="名称" prop="fileName" align="center" />
-        <el-table-column label="上传日期" prop="discription" align="center" />
+        <el-table-column label="上传日期" prop="CreatedAt" align="center">
+          <template #default="scope">
+            <span>{{ formatTableVal(scope.row.CreatedAt, 'dateTime') }}</span>
+          </template>
+        </el-table-column>
         <el-table-column
           align="center"
           label="按钮组"
@@ -194,17 +198,16 @@
             <el-table-column label="上传进度" align="center" width="200">
               <template #default="scope">
                 <el-progress
+                  :text-inside="true"
                   style="margin-top: 12px"
-                  :stroke-width="6"
+                  :stroke-width="10"
                   :percentage="scope.row.percentage"
                   :status="scope.row.percentage >= 100 ? 'success' : undefined"
                 />
               </template>
             </el-table-column>
           </el-table>
-        </div>
-      </div>
-    </el-dialog>
+        </div></div></el-dialog>
   </div>
 </template>
 
@@ -217,11 +220,17 @@ export default {
 <script setup>
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import SparkMD5 from 'spark-md5'
 
-import { uploadProjectChunk, mergeProjectFileChunk } from '@/api/project'
+import {
+  uploadProjectChunk,
+  mergeProjectFileChunk,
+  getProjectFileRecordList,
+  deleteProjectFileByIds,
+  downloadFile,
+} from '@/api/project'
 
 import { useRoute } from 'vue-router'
 
@@ -235,6 +244,10 @@ const projectID = ref()
 // 上传文件的最大大小
 const maxSize = 200 * 1024 * 1024
 
+// =========== 表格控制部分 ===========
+const page = ref(1)
+const total = ref(0)
+const pageSize = ref(10)
 // 用来显示所有附件类型的静态表格数据
 const tableData = ref([
   {
@@ -271,7 +284,7 @@ const tableData = ref([
 ])
 // 待上传的文件列表
 const filesToBeUpload = ref([])
-const projectFilesData = ref([])
+const projectFileRecordTableData = ref([])
 // 初始化方法
 const init = async() => {
   // 建议通过url传参获取目标数据ID 调用 find方法进行查询数据操作 从而决定本页面是create还是update 以下为id作为url参数示例
@@ -285,6 +298,23 @@ const init = async() => {
 init()
 
 // ----------------------------显示附件表格部分------------------------------------
+const getTableData = async() => {
+  const params = {
+    page: page.value,
+    pageSize: pageSize.value,
+    projectID: projectID.value,
+    fileTypeID: fileTypeID.value,
+  }
+  const table = await getProjectFileRecordList(params)
+  console.log(params, table)
+  if (table.code === 0) {
+    projectFileRecordTableData.value = table.data.list
+    total.value = table.data.total
+    page.value = table.data.page
+    pageSize.value = table.data.pageSize
+  }
+}
+
 const deleteVisible = ref(false)
 // 多选删除
 const onDelete = async() => {
@@ -300,18 +330,18 @@ const onDelete = async() => {
     multipleSelection.value.map((item) => {
       ids.push(item.ID)
     })
-  // const res = await deleteProjectByIds({ ids })
-  // if (res.code === 0) {
-  //   ElMessage({
-  //     colType: 'success',
-  //     message: '删除成功',
-  //   })
-  //   if (tableData.value.length === ids.length && page.value > 1) {
-  //     page.value--
-  //   }
-  //   deleteVisible.value = false
-  //   getTableData()
-  // }
+  const res = await deleteProjectFileByIds({ ids })
+  if (res.code === 0) {
+    ElMessage({
+      colType: 'success',
+      message: '删除成功',
+    })
+    if (tableData.value.length === ids.length && page.value > 1) {
+      page.value--
+    }
+    deleteVisible.value = false
+    getTableData()
+  }
 }
 
 // 多选数据
@@ -320,11 +350,24 @@ const multipleSelection = ref([])
 const handleSelectionChange = (val) => {
   multipleSelection.value = val
 }
+// 分页
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  getTableData()
+}
+
+// 修改页面容量
+const handleCurrentChange = (val) => {
+  page.value = val
+  getTableData()
+}
 
 // 选中一个类型以后显示该类型的文件
 const showProjectFilesFunc = (row) => {
   isShowDialog.value = false
   fileTypeID.value = row.ID
+  // 获取项目附件列表
+  getTableData()
 }
 const createProjectFileFunc = () => {
   isShowUploadFilesDialog.value = true
@@ -365,9 +408,10 @@ const uploadFile = async(file) => {
   //   size : ..,
   //   ...
   // }
+  const formDataList = [] // 分片存储的一个池子 丢全局
   const fileR = new FileReader() // 创建一个reader用来读取文件流
   fileR.readAsArrayBuffer(file.raw) // 把文件读成ArrayBuffer  主要为了保持跟后端的流一致
-  fileR.onload = async(e) => {
+  fileR.onload = (e) => {
     // 读成arrayBuffer的回调 e 为方法自带参数 相当于 dom的e 流存在e.target.result 中
     const blob = e.target.result
     const spark = new SparkMD5.ArrayBuffer() // 创建md5制造工具 （md5用于检测文件一致性 这里不懂就打电话问我）
@@ -377,7 +421,6 @@ const uploadFile = async(file) => {
     let start = 0 // 定义分片开始切的地方
     let end = 0 // 每片结束切的地方a
     let i = 0 // 第几片
-    const formDataList = [] // 分片存储的一个池子 丢全局
     while (end < file.size) {
       // 当结尾数字大于文件总size的时候 结束切片
       start = i * FileSliceCap // 计算每片开始位置
@@ -424,9 +467,6 @@ const uploadFile = async(file) => {
               fileTypeID: fileTypeID.value,
             }
             const res = await mergeProjectFileChunk(params)
-            if (res.code === 0) {
-              ElMessage.success('上传成功')
-            }
           }
         }
         // 上传一个切片以后更新百分数
@@ -436,11 +476,60 @@ const uploadFile = async(file) => {
 
 // 异步上传多个项目文件
 const uploadProjectFilesFunc = async() => {
-  await Promise.all(
+  const res = await Promise.all(
     filesToBeUpload.value.map(async(file) => {
       // 分片上传
       await uploadFile(file)
     })
   )
+  console.log(res)
+  ElMessageBox.confirm(
+    `上传完成，已上传${res.length}/${filesToBeUpload.value.length}个文件`,
+    'success',
+    {
+      confirmButtonText: '查看附件',
+      cancelButtonText: '继续上传',
+      type: 'success',
+    }
+  )
+    .then(() => {
+      getTableData()
+      isShowUploadFilesDialog.value = false
+      filesToBeUpload.value = []
+    })
+    .catch(() => {
+      getTableData()
+      filesToBeUpload.value = []
+    })
+}
+const saveAs = (data, fileName) => {
+  const blob = new Blob([data])
+  if ('download' in document.createElement('a')) {
+    // 不是IE浏览器
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.style.display = 'none'
+    link.href = url
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link) // 下载完成移除元素
+    window.URL.revokeObjectURL(url) // 释放掉blob对象
+  } else {
+    // IE 10+
+    window.navigator.msSaveBlob(blob, fileName)
+  }
+}
+// 下载文件
+const downloadFileFunc = async(row) => {
+  const params = {
+    fileName: row.fileName,
+    projectID: projectID.value,
+    fileTypeID: fileTypeID.value,
+  }
+  const res = await downloadFile(params)
+  if (res.status === 200) {
+    saveAs(res.data, row.fileName)
+  }
 }
 </script>

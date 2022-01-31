@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/url"
+	"path/filepath"
 	"strconv"
 )
 
@@ -217,5 +218,80 @@ func (projectApi *ProjectApi) MergeProjectFileChunk(c *gin.Context) {
 		response.FailWithMessage("合并分片文件失败", c)
 		return
 	}
+	content, err := ioutil.ReadFile(filepath.Join("./fileDir", projectID, fileTypeID, fileName))
+	if err != nil {
+		response.FailWithMessage("读取已上传文件失败！", c)
+		return
+	}
+	if !utils.CheckMd5(content, fileMd5) {
+		response.FailWithMessage("校验文件md5失败！", c)
+		return
+	}
+	// todo 添加上传记录
+	fileRecord := autocode.ProjectFileRecord{FileMD5: fileMd5, FileName: fileName, FileTypeID: fileTypeID, ProjectID: projectID}
+	if err := projectService.CreateUploadProjectFileRecord(fileRecord); err != nil {
+		response.FailWithMessage("创建文件上传记录失败！", c)
+		return
+	}
 	response.OkWithMessage("合并分片成功", c)
+}
+
+// GetProjectFileList
+// @Summary 分页文件列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.PageInfo true "页码, 每页大小，projectID, fileTypeID"
+// @Success 200 {object} response.Response{data=response.PageResult,msg=string} "分页文件列表,返回包括列表,总数,页码,每页数量"
+// @Router /fileUploadAndDownload/getFileList [get]
+func (projectApi *ProjectApi) GetProjectFileRecordList(c *gin.Context) {
+	var info autocodeReq.ProjectFileRecordSearch
+	// bind query
+	_ = c.ShouldBindQuery(&info)
+
+	err, list, total := projectService.GetProjectFileRecordInfoList(info)
+	if err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(response.PageResult{
+			List:     list,
+			Total:    total,
+			Page:     info.Page,
+			PageSize: info.PageSize,
+		}, "获取成功", c)
+	}
+}
+
+// DeleteProjectByIds 批量删除ProjectFileRecord
+// @Tags Project
+// @Summary 批量删除Project
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "批量删除Project"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"批量删除成功"}"
+// @Router /project/deleteProjectByIds [delete]
+func (projectApi *ProjectApi) DeleteProjectFileByIds(c *gin.Context) {
+	var IDS request.IdsReq
+	_ = c.ShouldBindJSON(&IDS)
+	if err := projectService.DeleteProjectFileByIds(IDS); err != nil {
+		global.GVA_LOG.Error("批量删除失败!", zap.Error(err))
+		response.FailWithMessage("批量删除失败", c)
+	} else {
+		response.OkWithMessage("批量删除成功", c)
+	}
+}
+
+//根据文件路径读取返回流文件 参数url
+func (projectApi *ProjectApi) DownloadFile(c *gin.Context) {
+	var record autocode.ProjectFileRecord
+	// bind query
+	_ = c.ShouldBindQuery(&record)
+	path := utils.GetProjectFilePath(record)
+	//获取文件类型对应的http ContentType 类型
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", record.FileName)
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.File(path)
 }

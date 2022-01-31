@@ -128,3 +128,52 @@ export const mergeProjectFileChunk = (params) => {
     params
   })
 }
+
+// @Tags Project
+// @Summary 按类型分页获取项目的附件记录
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query model.Project true "上传项目附件（分片）"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"查询成功"}"
+// @Router /project/uploadProjectFile [get]
+export const getProjectFileRecordList = (params) => {
+  return service({
+    url: '/project/getProjectFileRecordList',
+    method: 'get',
+    params
+  })
+}
+
+// @Tags Project
+// @Summary 删除ProjectFile
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "批量删除ProjectFile"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /project/deleteProject [delete]
+export const deleteProjectFileByIds = (data) => {
+  return service({
+    url: '/project/deleteProjectFileByIds',
+    method: 'delete',
+    data
+  })
+}
+
+// @Tags Project
+// @Summary 下载附件
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body request.IdsReq true "批量删除ProjectFile"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"删除成功"}"
+// @Router /project/deleteProject [delete]
+export const downloadFile = (params) => {
+  return service({
+    url: '/project/downloadFile',
+    method: 'get',
+    params,
+    responseType: 'blob' // 制定响应类型
+  })
+}

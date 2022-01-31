@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -59,4 +60,14 @@ func MergeChunk(fileName string, FileMd5 string, projectID string, fileTypeID st
 		return err, chuckDir
 	}
 	return nil, savePath
+}
+
+func DeleteProjectFile(record autocode.ProjectFileRecord) error {
+	path := GetProjectFilePath(record)
+	err := os.Remove(path)
+	return err
+}
+
+func GetProjectFilePath(record autocode.ProjectFileRecord) string {
+	return filepath.Join(finishDir, record.ProjectID, record.FileTypeID, record.FileName)
 }

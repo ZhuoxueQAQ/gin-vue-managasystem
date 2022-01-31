@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"log"
 )
 
@@ -125,4 +126,48 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	// todo 导出的时候，取消分页，返回total。前端来进行导出？
 
 	return err, projects, total
+}
+
+func (projectService *ProjectService) GetProjectFileRecordInfoList(info autoCodeReq.ProjectFileRecordSearch) (err error, list interface{},
+	total int64) {
+	var projectFileRecords []autocode.ProjectFileRecord
+	// 创建db
+	db := global.GVA_DB.Model(&autocode.ProjectFileRecord{})
+	// 分页参数
+	limit := info.PageSize
+	offset := info.PageSize * (info.Page - 1)
+
+	db = db.Where("project_id = ? and file_type_id = ?", info.ProjectID, info.FileTypeID)
+	// total 是已经筛选的数据的条数
+	err = db.Count(&total).Error
+	if err != nil {
+		return
+	}
+	err = db.Limit(limit).Offset(offset).Find(&projectFileRecords).Error
+	return err, projectFileRecords, total
+}
+
+func (projectService *ProjectService) DeleteProjectFileByIds(ids request.IdsReq) (err error) {
+	var records []autocode.ProjectFileRecord
+	// 按数组查询
+	if err := global.GVA_DB.Model(&[]autocode.ProjectFileRecord{}).Where("id in ?", ids.Ids).Find(&records).Error; err != nil {
+		return err
+	}
+	for _, record := range records {
+		log.Println(record)
+		// 查询待删除的记录
+		// 删除文件
+		if err := utils.DeleteProjectFile(record); err != nil {
+			return err
+		}
+		// 删除文件记录
+		if err := global.GVA_DB.Model(&autocode.ProjectFileRecord{}).Delete(&record).Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (projectService *ProjectService) CreateUploadProjectFileRecord(record autocode.ProjectFileRecord) (err error) {
+	return global.GVA_DB.Create(&record).Error
 }

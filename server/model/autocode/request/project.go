@@ -14,3 +14,8 @@ type ProjectSearch struct {
 	TrainStartDateRange    []time.Time `json:"trainStartDateRange"`
 	ContractStartDateRange []time.Time `json:"contractStartDateRange"`
 }
+
+type ProjectFileRecordSearch struct {
+	autocode.ProjectFileRecord
+	request.PageInfo
+}
