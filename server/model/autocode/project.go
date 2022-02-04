@@ -40,9 +40,10 @@ func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
 
 // AmountObj 结构体是一个金额对象
 type AmountObj struct {
-	Name   string          `json:"name"`
-	Radio  decimal.Decimal `json:"radio"`
-	Amount decimal.Decimal `json:"amount"`
+	Name          string          `json:"name"`
+	Radio         decimal.Decimal `json:"radio"`
+	IncomeAmount  decimal.Decimal `json:"incomeAmount"`  // 收入
+	OutcomeAmount decimal.Decimal `json:"outcomeAmount"` // 支出
 }
 
 // AmountJSONArr 结构体是一个金额对象json数组

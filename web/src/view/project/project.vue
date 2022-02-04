@@ -50,7 +50,12 @@
           >
             搜索
           </el-button>
-          <el-button size="mini" type="primary" icon="download">
+          <el-button
+            size="mini"
+            type="primary"
+            icon="download"
+            @click="handleExcelExport"
+          >
             导出
           </el-button>
           <el-button
@@ -276,6 +281,7 @@
     <div class="gva-table-box">
       <el-table
         v-if="tableCols !== undefined && tableData !== undefined"
+        id="data-table"
         ref="multipleTable"
         :default-sort="{ prop: 'createdDate', order: 'descending' }"
         style="width: 100%"
@@ -562,19 +568,19 @@ const searchInfo = ref({
   trainStartDateRange: undefined,
   contractStartDateRange: undefined,
   client: [
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
   ],
   landingAgency: [
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
   ],
   partner: [
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
-    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
   ],
 })
 const manageSystemSettingID = ref(1)
@@ -704,19 +710,19 @@ const onReset = () => {
     trainStartDateRange: undefined,
     contractStartDateRange: undefined,
     client: [
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
     ],
     landingAgency: [
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
     ],
     partner: [
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
-      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
     ],
   }
 }
@@ -750,6 +756,7 @@ const getTableData = async() => {
     searchInfo: JSON.stringify(searchInfo.value),
   })
   if (table.code === 0) {
+    // console.log(table.data.list)
     tableData.value = table.data.list
     total.value = table.data.total
     page.value = table.data.page
@@ -888,6 +895,9 @@ const updateManageSystemSettingFunc = async() => {
     getTableData()
   }
 }
+
+// 导出
+const handleExcelExport = () => {}
 </script>
 
 <style scoped>
