@@ -11,7 +11,7 @@
             size="mini"
             type="primary"
             icon="plus"
-            @click="createProjectFunc"
+            @click="createIncomeStreamFunc"
           >新增</el-button>
           <el-popover
             v-model:visible="deleteVisible"
@@ -102,36 +102,16 @@
         >
           <el-row>
             <el-col :span="8">
-              <el-form-item label="项目名称" label-width="100px">
+              <el-form-item label="所属项目" label-width="100px">
                 <el-input
-                  v-model="searchInfo.name"
+                  v-model="searchInfo.projectName"
                   placeholder="请输入待匹配文本"
                   :style="{ width: '100%' }"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="项目类别" label-width="100px">
-                <el-input
-                  v-model="searchInfo.categories"
-                  placeholder="请输入待匹配文本"
-                  :style="{ width: '100%' }"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="8">
-              <el-form-item label="项目码" label-width="100px">
-                <el-input
-                  v-model="searchInfo.projectCode"
-                  placeholder="请输入待匹配文本"
-                  :style="{ width: '100%' }"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col :span="8">
-              <el-form-item label="备案申请日期" label-width="100px">
+              <el-form-item label="入账日期">
                 <el-date-picker
                   v-model="searchInfo.createdDateRange"
                   format="YYYY-MM-DD"
@@ -146,9 +126,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="8">
-              <el-form-item label="合同开始时间">
+              <el-form-item label="分账日期">
                 <el-date-picker
-                  v-model="searchInfo.contractStartDateRange"
+                  v-model="searchInfo.splitAmountDateRange"
                   format="YYYY-MM-DD"
                   :style="{ width: '100%' }"
                   placeholder="请输入待匹配文本"
@@ -160,75 +140,60 @@
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item label="培训开始时间">
-                <el-date-picker
-                  v-model="searchInfo.trainStartDateRange"
-                  format="YYYY-MM-DD"
-                  :style="{ width: '100%' }"
-                  placeholder="请输入待匹配文本"
-                  type="daterange"
-                  unlink-panels
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col
-              v-for="index in maxFormRowNum"
-              :key="'client' + index"
-              :span="24 / maxFormRowNum"
-            >
-              <el-form-item
-                :label="`委托方${String(index)}名称`"
-                label-width="100px"
+            <el-row>
+              <el-col
+                v-for="index in maxFormRowNum"
+                :key="'client' + index"
+                :span="24 / maxFormRowNum"
               >
-                <el-input
-                  v-model="searchInfo.client[index - 1].name"
-                  placeholder="请输入待匹配文本"
-                  :style="{ width: '100%' }"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col
-              v-for="index in maxFormRowNum"
-              :key="'landingAgency' + index"
-              :span="24 / maxFormRowNum"
-            >
-              <el-form-item
-                :label="`落地方${String(index)}名称`"
-                label-width="100px"
+                <el-form-item
+                  :label="`委托方${String(index)}名称`"
+                  label-width="100px"
+                >
+                  <el-input
+                    v-model="searchInfo.client[index - 1].name"
+                    placeholder="请输入待匹配文本"
+                    :style="{ width: '100%' }"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col
+                v-for="index in maxFormRowNum"
+                :key="'landingAgency' + index"
+                :span="24 / maxFormRowNum"
               >
-                <el-input
-                  v-model="searchInfo.landingAgency[index - 1].name"
-                  placeholder="请输入待匹配文本"
-                  :style="{ width: '100%' }"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-          <el-row>
-            <el-col
-              v-for="index in maxFormRowNum"
-              :key="'partner' + index"
-              :span="24 / maxFormRowNum"
-            >
-              <el-form-item
-                :label="`技术方${String(index)}名称`"
-                label-width="100px"
+                <el-form-item
+                  :label="`落地方${String(index)}名称`"
+                  label-width="100px"
+                >
+                  <el-input
+                    v-model="searchInfo.landingAgency[index - 1].name"
+                    placeholder="请输入待匹配文本"
+                    :style="{ width: '100%' }"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col
+                v-for="index in maxFormRowNum"
+                :key="'partner' + index"
+                :span="24 / maxFormRowNum"
               >
-                <el-input
-                  v-model="searchInfo.partner[index - 1].name"
-                  placeholder="请输入待匹配文本"
-                  :style="{ width: '100%' }"
-                />
-              </el-form-item>
-            </el-col>
+                <el-form-item
+                  :label="`技术方${String(index)}名称`"
+                  label-width="100px"
+                >
+                  <el-input
+                    v-model="searchInfo.partner[index - 1].name"
+                    placeholder="请输入待匹配文本"
+                    :style="{ width: '100%' }"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-row>
         </el-form>
       </div>
@@ -270,6 +235,14 @@
                 :label="col.label + String(showIndex + 1)"
               />
             </div>
+            <div v-else-if="col.colType === 'json'">
+              <el-checkbox
+                v-for="s in col.sub"
+                :key="s.label + '-' + s.prop"
+                v-model="s.show"
+                :label="s.label"
+              />
+            </div>
             <div v-else>
               <el-checkbox v-model="col.show" :label="col.label" />
             </div>
@@ -295,16 +268,16 @@
         <!-- 项目名称 左固定 -->
         <el-table-column
           align="center"
-          label="项目名称"
-          prop="name"
+          label="培训项目"
+          prop="projectName"
           fixed="left"
           width="200"
           :show-overflow-tooltip="true"
         />
-        <!-- 备案申请日期 -->
+        <!-- 入账日期 -->
         <el-table-column
           align="center"
-          label="备案申请日期"
+          label="入账日期"
           width="150"
           sortable
           prop="createdDate"
@@ -373,6 +346,27 @@
               </el-table-column>
             </el-table-column>
           </template>
+          <!-- 对json类型的值 -->
+          <template v-else-if="col.colType === 'json'">
+            <template v-for="s in col.sub">
+              <el-table-column
+                v-if="s.show"
+                :key="s.label"
+                :prop="s.prop"
+                :label="s.label"
+                align="center"
+                :show-overflow-tooltip="true"
+                :width="s.width"
+              >
+                <template #default="scope">
+                  <!-- todo format -->
+                  <span>
+                    {{ formatTableVal(scope.row[col.prop][s.prop], s.format) }}
+                  </span>
+                </template>
+              </el-table-column>
+            </template>
+          </template>
           <!-- 其他的正常渲染 -->
           <template v-else>
             <el-table-column
@@ -393,60 +387,6 @@
             </el-table-column>
           </template>
         </template>
-        <!-- 查看项目的预算和支出 -->
-        <el-table-column
-          align="center"
-          label="预算和支出"
-          fixed="right"
-          width="100"
-        >
-          <template #default="parentScope">
-            <el-popover
-              placement="top-start"
-              :width="500"
-              trigger="hover"
-              border
-            >
-              <template #reference>
-                <el-button
-                  size="small"
-                  class="table-button"
-                  type="text"
-                  icon="view"
-                >查看</el-button>
-              </template>
-              <el-table
-                :data="parentScope.row.incomeAndOutcome"
-                border
-                :summary-method="getIncomeAndOutcomBias"
-                show-summary
-              >
-                <el-table-column
-                  type="index"
-                  :index="indexMethod"
-                  width="50"
-                  align="center"
-                />
-                <!-- todo 再创建一个模板，注意prop -->
-                <el-table-column
-                  v-for="col in incomeAndOutcomeCols"
-                  :key="col.label"
-                  :prop="col.prop"
-                  :label="col.label"
-                  :width="col.width"
-                  align="center"
-                >
-                  <template #default="scope">
-                    <!-- todo format -->
-                    <span>
-                      {{ formatTableVal(scope.row[col.prop], col.format) }}
-                    </span>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-popover>
-          </template>
-        </el-table-column>
         <el-table-column
           align="center"
           label="按钮组"
@@ -459,15 +399,8 @@
               icon="edit"
               size="small"
               class="table-button"
-              @click="updateProjectFunc(scope.row)"
+              @click="updateIncomeStreamFunc(scope.row)"
             >变更</el-button>
-            <el-button
-              type="text"
-              icon="files"
-              size="small"
-              class="table-button"
-              @click="uploadProjectFilesFunc(scope.row)"
-            >附件</el-button>
             <el-button
               type="text"
               icon="delete"
@@ -494,16 +427,16 @@
 
 <script>
 export default {
-  name: 'Project',
+  name: 'IncomeStream',
 }
 </script>
 
 <script setup>
 import {
-  deleteProject,
-  deleteProjectByIds,
-  getProjectList,
-} from '@/api/project'
+  deleteIncomeStream,
+  deleteIncomeStreamByIds,
+  getIncomeStreamList,
+} from '@/api/incomeStream'
 import {
   findManageSystemSetting,
   updateManageSystemSetting,
@@ -529,94 +462,30 @@ const isShowSearchBox = ref(false)
 const isShowColCheckGroupBox = ref(false)
 // 委托方、落地机构和合作方的最大个数
 const maxFormRowNum = ref(3)
-const incomeAndOutcomeCols = ref([
-  { prop: 'pg', label: '专家课酬', format: 'amount', width: 120 },
-  { prop: 'ph', label: '方案费', format: 'amount', width: 120 },
-  { prop: 'pi', label: '网络研修教学费', format: 'amount', width: 120 },
-  { prop: 'pj', label: '管理及工作人员劳务费', format: 'amount', width: 120 },
-  { prop: 'pk', label: '考察、跟岗、线下指导费', format: 'amount', width: 120 },
-  { prop: 'pl', label: '专家食宿', format: 'amount', width: 120 },
-  { prop: 'pm', label: '专家及工作人员交通费', format: 'amount', width: 120 },
-  { prop: 'pn', label: '学员伙食费', format: 'amount', width: 120 },
-  { prop: 'po', label: '学员住宿费', format: 'amount', width: 120 },
-  { prop: 'pp', label: '学员交通费', format: 'amount', width: 120 },
-  { prop: 'pq', label: '场租', format: 'amount', width: 120 },
-  {
-    prop: 'pr',
-    label: '课程资源建设费(人员支出)',
-    format: 'amount',
-    width: 120,
-  },
-  { prop: 'ps', label: '课程资源建设费(购买)', format: 'amount', width: 120 },
-  {
-    prop: 'pt',
-    label:
-      '培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)',
-    format: 'amount',
-    width: 200,
-  },
-])
-// todo xiubug.
+
 const searchInfo = ref({
   page: 1,
   pageSize: 10,
-  name: '',
-  categories: '',
-  projectCode: '',
+  projectName: '',
   createdDateRange: undefined,
-  trainStartDateRange: undefined,
-  contractStartDateRange: undefined,
+  splitAmountDateRange: undefined,
   client: [
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
   ],
   landingAgency: [
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
   ],
   partner: [
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-    { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
+    { name: '', radio: 0, amount: 0 },
   ],
 })
 const manageSystemSettingID = ref(1)
-
-// 预算和支出的索引
-const indexMethod = (index) => {
-  switch (index) {
-    case 0:
-      return '预算'
-    case 1:
-      return '支出'
-    default:
-      return index
-  }
-}
-
-// 计算对应预算和支出的差
-const getIncomeAndOutcomBias = (param) => {
-  const { columns, data } = param
-  const sums = []
-  columns.forEach((column, index) => {
-    if (index === 0) {
-      sums[index] = '差值'
-      return
-    }
-    // 每一列，转成number类型
-    const values = data.map((item) => Number(item[column.property]))
-    // 里面的每个数都是number，则
-    if (!values.every((value) => isNaN(value))) {
-      sums[index] = formatTableVal(values[0] - values[1], 'amount')
-    } else {
-      sums[index] = 'N/A'
-    }
-  })
-
-  return sums
-}
 
 const sum = (values) => {
   return values.reduce((prev, curr) => {
@@ -678,7 +547,7 @@ const getSummries = (param) => {
         break
     }
   })
-  // 项目名称和备案申请日期不在tableCols里面，所以要加上
+  // todo change 项目名称和入账日期不在tableCols里面，所以要加上
   sums.unshift('合计', '', '')
   return sums
 }
@@ -702,26 +571,23 @@ const onReset = () => {
   searchInfo.value = {
     page: 1,
     pageSize: 10,
-    name: '',
-    categories: '',
-    projectCode: '',
+    projectName: '',
     createdDateRange: undefined,
-    trainStartDateRange: undefined,
-    contractStartDateRange: undefined,
+    splitAmountDateRange: undefined,
     client: [
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
     ],
     landingAgency: [
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
     ],
     partner: [
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
-      { name: '', radio: 0, incomeAmount: 0, outcomeAmount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
+      { name: '', radio: 0, amount: 0 },
     ],
   }
 }
@@ -751,11 +617,11 @@ const getTableData = async() => {
   // 把所有查询的参数结合到一个对象中。
   searchInfo.value.page = page.value
   searchInfo.value.pageSize = pageSize.value
-  const table = await getProjectList({
+  const table = await getIncomeStreamList({
     searchInfo: JSON.stringify(searchInfo.value),
   })
   if (table.code === 0) {
-    // console.log(table.data.list)
+    console.log(table.data.list[0].pays.pg)
     tableData.value = table.data.list
     total.value = table.data.total
     page.value = table.data.page
@@ -770,8 +636,9 @@ const getTableCols = async() => {
     ID: manageSystemSettingID.value,
   })
   if (manageSystemSetting.code === 0) {
+    // 是收入流水的模板
     tableCols.value =
-      manageSystemSetting.data.remanageSystemSetting.projectTableCols
+      manageSystemSetting.data.remanageSystemSetting.incomeStreamTableCols
   }
 }
 // 获取表格列模板
@@ -801,7 +668,7 @@ const deleteRow = (row) => {
     cancelButtonText: '取消',
     colType: 'warning',
   }).then(() => {
-    deleteProjectFunc(row)
+    deleteIncomeStreamFunc(row)
   })
 }
 
@@ -822,7 +689,7 @@ const onDelete = async() => {
     multipleSelection.value.map((item) => {
       ids.push(item.ID)
     })
-  const res = await deleteProjectByIds({ ids })
+  const res = await deleteIncomeStreamByIds({ ids })
   if (res.code === 0) {
     ElMessage({
       colType: 'success',
@@ -835,26 +702,22 @@ const onDelete = async() => {
     getTableData()
   }
 }
-
-const createProjectFunc = async() => {
-  router.push({
-    name: 'projectForm',
-  })
-}
-
-const uploadProjectFilesFunc = async(row) => {
-  router.push({
-    name: 'projectFiles',
-    query: {
-      id: row.ID,
-    },
-  })
+// 前往培训项目选择一个项目后再创建收入流水
+const createIncomeStreamFunc = async() => {
+  ElMessageBox.alert(
+    '请前往“培训项目列表”中选择该流水所属的培训项目',
+    '需选择待录入流水所属的项目',
+    {
+      confirmButtonText: '好的，这就去',
+      callback: () => router.push({ name: 'project' }),
+    }
+  )
 }
 
 // 更新行
-const updateProjectFunc = async(row) => {
+const updateIncomeStreamFunc = async(row) => {
   router.push({
-    name: 'projectForm',
+    name: 'incomeStreamForm',
     query: {
       id: row.ID,
     },
@@ -862,8 +725,8 @@ const updateProjectFunc = async(row) => {
 }
 
 // 删除行
-const deleteProjectFunc = async(row) => {
-  const res = await deleteProject({ ID: row.ID })
+const deleteIncomeStreamFunc = async(row) => {
+  const res = await deleteIncomeStream({ ID: row.ID })
   if (res.code === 0) {
     ElMessage({
       colType: 'success',
@@ -878,11 +741,11 @@ const deleteProjectFunc = async(row) => {
 
 // 更新系统设置
 const updateManageSystemSettingFunc = async() => {
-  // todo ：这里只传projectCol，gorm只更新一个字段
+  // 这里只传incomeSteamTableCol，gorm只更新一个字段
   const res = await updateManageSystemSetting({
     ID: 1, // 必须是1
-    projectTableCols: tableCols.value,
-    incomeStreamTableCols: [],
+    projectTableCols: [],
+    incomeStreamTableCols: tableCols.value,
     outcomeStreamTableCols: [],
   })
   if (res.code === 0) {

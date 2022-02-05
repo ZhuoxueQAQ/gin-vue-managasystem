@@ -649,7 +649,7 @@ const rules = ref({
   name: [
     {
       required: true,
-      message: '请输入项目名称项目名称',
+      message: '请输入项目名称',
       trigger: 'blur',
     },
   ],
@@ -670,7 +670,7 @@ const rules = ref({
   createdDate: [
     {
       required: true,
-      message: '请输入备案申请日期备案日期',
+      message: '请输入备案申请日期',
       trigger: 'change',
     },
   ],

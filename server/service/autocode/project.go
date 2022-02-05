@@ -97,7 +97,6 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	}
 
 	// 根据委托方、落地机构和技术方的名字筛选
-	// todo 修复bug
 	for index, val := range *(info.Client) {
 		if val.Name != "" {
 			query := fmt.Sprintf("client->'$[%v].name' LIKE ? ", index)

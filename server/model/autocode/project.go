@@ -37,8 +37,15 @@ func (i IncomeAndOutcomeJSONArr) Value() (driver.Value, error) {
 func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
 	return json.Unmarshal(input.([]byte), i)
 }
+func (i IncomeAndOutcomeObj) Value() (driver.Value, error) {
+	b, err := json.Marshal(i)
+	return string(b), err
+}
+func (i *IncomeAndOutcomeObj) Scan(input interface{}) error {
+	return json.Unmarshal(input.([]byte), i)
+}
 
-// AmountObj 结构体是一个金额对象
+// AmountObj 结构体是培训项目中一个金额对象（表示一个委托方、落地机构或者技术方）
 type AmountObj struct {
 	Name          string          `json:"name"`
 	Radio         decimal.Decimal `json:"radio"`
@@ -54,6 +61,24 @@ func (a AmountJSONArr) Value() (driver.Value, error) {
 	return string(b), err
 }
 func (a *AmountJSONArr) Scan(input interface{}) error {
+	return json.Unmarshal(input.([]byte), a)
+}
+
+// AmountObjOfIncomeOrOutComeStream 结构体是收入|支出流水中一个金额对象（表示一个委托方、落地机构或者技术方）
+type AmountObjOfIncomeOrOutComeStream struct {
+	Name   string          `json:"name"`   // 名称
+	Radio  decimal.Decimal `json:"radio"`  // 分成比例
+	Amount decimal.Decimal `json:"amount"` // 金额
+}
+
+// AmountOfIncomeOrOutComeStreamJSONArr 结构体是一个收入|支出流水中的金额对象json数组
+type AmountOfIncomeOrOutComeStreamJSONArr []AmountObjOfIncomeOrOutComeStream
+
+func (a AmountOfIncomeOrOutComeStreamJSONArr) Value() (driver.Value, error) {
+	b, err := json.Marshal(a)
+	return string(b), err
+}
+func (a *AmountOfIncomeOrOutComeStreamJSONArr) Scan(input interface{}) error {
 	return json.Unmarshal(input.([]byte), a)
 }
 
