@@ -565,7 +565,7 @@
         "prop": "pt",
         "show": true,
         "label": "培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)",
-        "width": 200,
+        "width": 230,
         "format": "amount",
         "colType": "",
         "showList": null,

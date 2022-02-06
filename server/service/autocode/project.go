@@ -7,6 +7,7 @@ import (
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
+	"github.com/shopspring/decimal"
 	"log"
 )
 
@@ -17,6 +18,9 @@ type ProjectService struct {
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) CreateProject(project autocode.Project) (err error) {
 	log.Println(project)
+	// 对已到账费用和未到账金额赋值
+	project.PaidAmount = decimal.NewFromFloat(0.0)
+	project.UnpaidAmount = project.ProjectAmount
 	err = global.GVA_DB.Create(&project).Error
 	return err
 }
@@ -38,6 +42,8 @@ func (projectService *ProjectService) DeleteProjectByIds(ids request.IdsReq) (er
 // UpdateProject 更新Project记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) UpdateProject(project autocode.Project) (err error) {
+	// 更新未到账金额(如果项目应收经费更新了)
+	project.UnpaidAmount = project.ProjectAmount.Sub(project.PaidAmount)
 	err = global.GVA_DB.Save(&project).Error
 	return err
 }
@@ -97,19 +103,19 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	}
 
 	// 根据委托方、落地机构和技术方的名字筛选
-	for index, val := range *(info.Client) {
+	for index, val := range info.Client {
 		if val.Name != "" {
 			query := fmt.Sprintf("client->'$[%v].name' LIKE ? ", index)
 			db = db.Where(query, "%"+val.Name+"%")
 		}
 	}
-	for index, val := range *(info.LandingAgency) {
+	for index, val := range info.LandingAgency {
 		if val.Name != "" {
 			query := fmt.Sprintf("landing_agency->'$[%v].name' LIKE ? ", index)
 			db = db.Where(query, "%"+val.Name+"%")
 		}
 	}
-	for index, val := range *(info.Partner) {
+	for index, val := range info.Partner {
 		if val.Name != "" {
 			query := fmt.Sprintf("partner->'$[%v].name' LIKE ? ", index)
 			db = db.Where(query, "%"+val.Name+"%")

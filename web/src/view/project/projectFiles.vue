@@ -49,12 +49,7 @@
             <span>{{ formatTableVal(scope.row.CreatedAt, 'dateTime') }}</span>
           </template>
         </el-table-column>
-        <el-table-column
-          align="center"
-          label="按钮组"
-          fixed="right"
-          width="200"
-        >
+        <el-table-column align="center" label="操作" fixed="right" width="100">
           <template #default="scope">
             <el-button
               type="text"

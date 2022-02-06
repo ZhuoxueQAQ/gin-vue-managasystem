@@ -112,11 +112,11 @@ type Project struct {
 	TrainNumOfPerson int `json:"trainNumOfPerson" form:"trainNumOfPerson" gorm:"column:train_num_of_person;comment:培训人数;size:19;"`
 	TrainTime        int `json:"trainTime" form:"trainTime" gorm:"column:train_time;comment:培训学时数;size:19;"`
 
-	Client        *AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
-	LandingAgency *AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
-	Partner       *AmountJSONArr `json:"partner" form:"partner" gorm:"type:json;column:partner;comment:技术方;"`
+	Client        AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
+	LandingAgency AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
+	Partner       AmountJSONArr `json:"partner" form:"partner" gorm:"type:json;column:partner;comment:技术方;"`
 
-	IncomeAndOutcome *IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" validate:"required" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
+	IncomeAndOutcome IncomeAndOutcomeJSONArr `json:"incomeAndOutcome" validate:"required" form:"incomeAndOutcome" gorm:"type:json;column:income_and_outcome;comment:预算和支出;"`
 
 	CreatedDate       time.Time `json:"createdDate" form:"createdDate" validate:"required" gorm:"type:date;column:created_date;comment:备案申请日期;"`
 	ContractStartDate time.Time `json:"contractStartDate" form:"contractStartDate" gorm:"type:date;column:contract_start_date;comment:合同开始时间;"`

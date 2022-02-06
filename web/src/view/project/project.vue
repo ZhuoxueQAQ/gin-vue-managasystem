@@ -398,7 +398,7 @@
           align="center"
           label="预算和支出"
           fixed="right"
-          width="100"
+          width="70"
         >
           <template #default="parentScope">
             <el-popover
@@ -409,11 +409,11 @@
             >
               <template #reference>
                 <el-button
-                  size="small"
+                  size="medium"
                   class="table-button"
                   type="text"
                   icon="view"
-                >查看</el-button>
+                />
               </template>
               <el-table
                 :data="parentScope.row.incomeAndOutcome"
@@ -447,33 +447,39 @@
             </el-popover>
           </template>
         </el-table-column>
-        <el-table-column
-          align="center"
-          label="按钮组"
-          fixed="right"
-          width="200"
-        >
+        <el-table-column align="center" label="操作" fixed="right" width="60">
           <template #default="scope">
-            <el-button
-              type="text"
-              icon="edit"
-              size="small"
-              class="table-button"
-              @click="updateProjectFunc(scope.row)"
-            >变更</el-button>
-            <el-button
-              type="text"
-              icon="files"
-              size="small"
-              class="table-button"
-              @click="uploadProjectFilesFunc(scope.row)"
-            >附件</el-button>
-            <el-button
-              type="text"
-              icon="delete"
-              size="mini"
-              @click="deleteRow(scope.row)"
-            >删除</el-button>
+            <el-popover placement="left" :width="40" trigger="hover">
+              <template #reference>
+                <el-button size="medium" type="text" icon="setting" />
+              </template>
+              <el-button
+                style="padding-left: 10px"
+                type="text"
+                icon="edit"
+                size="medium"
+                @click="updateProjectFunc(scope.row)"
+              >编辑项目信息</el-button>
+              <el-button
+                type="text"
+                icon="upload"
+                size="medium"
+                class="table-button"
+                @click="uploadProjectFilesFunc(scope.row)"
+              >上传项目附件</el-button>
+              <el-button
+                type="text"
+                icon="plus"
+                size="medium"
+                @click="createIncomeStreamFunc(scope.row)"
+              >添加收入流水</el-button>
+              <el-button
+                type="text"
+                icon="plus"
+                size="medium"
+                @click="createIncomeStreamFunc(scope.row)"
+              >添加支出流水</el-button>
+            </el-popover>
           </template>
         </el-table-column>
       </el-table>
@@ -499,11 +505,7 @@ export default {
 </script>
 
 <script setup>
-import {
-  deleteProject,
-  deleteProjectByIds,
-  getProjectList,
-} from '@/api/project'
+import { deleteProjectByIds, getProjectList } from '@/api/project'
 import {
   findManageSystemSetting,
   updateManageSystemSetting,
@@ -511,9 +513,8 @@ import {
 
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
-
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -794,17 +795,6 @@ const handleSelectionChange = (val) => {
   multipleSelection.value = val
 }
 
-// 删除行
-const deleteRow = (row) => {
-  ElMessageBox.confirm('确定要删除吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    colType: 'warning',
-  }).then(() => {
-    deleteProjectFunc(row)
-  })
-}
-
 // 批量删除控制标记
 const deleteVisible = ref(false)
 
@@ -853,27 +843,13 @@ const uploadProjectFilesFunc = async(row) => {
 
 // 更新行
 const updateProjectFunc = async(row) => {
+  console.log(row)
   router.push({
     name: 'projectForm',
     query: {
       id: row.ID,
     },
   })
-}
-
-// 删除行
-const deleteProjectFunc = async(row) => {
-  const res = await deleteProject({ ID: row.ID })
-  if (res.code === 0) {
-    ElMessage({
-      colType: 'success',
-      message: '删除成功',
-    })
-    if (tableData.value.length === 1 && page.value > 1) {
-      page.value--
-    }
-    getTableData()
-  }
 }
 
 // 更新系统设置
@@ -897,6 +873,16 @@ const updateManageSystemSettingFunc = async() => {
 
 // 导出
 const handleExcelExport = () => {}
+
+// 创建收入流水
+const createIncomeStreamFunc = (row) => {
+  router.push({
+    name: 'incomeStreamForm',
+    query: {
+      project: JSON.stringify(row),
+    },
+  })
+}
 </script>
 
 <style scoped>

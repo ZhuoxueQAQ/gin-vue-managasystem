@@ -40,10 +40,10 @@ type IncomeStream struct {
 	InvoiceCode     string `json:"invoiceCode" form:"invoiceCode" gorm:"column:invoice_code;comment:invoiceCode;size:200;"`
 	Remark          string `json:"remark" form:"remark" gorm:"column:remark;comment:备注;"`
 
-	Client        *AmountOfIncomeOrOutComeStreamJSONArr `json:"client" form:"client" gorm:"column:client;comment:委托方;"`
-	LandingAgency *AmountOfIncomeOrOutComeStreamJSONArr `json:"landingAgency" form:"landingAgency" gorm:"column:landing_agency;comment:落地机构;"`
-	Partner       *AmountOfIncomeOrOutComeStreamJSONArr `json:"partner" form:"partner" gorm:"column:partner;comment:合作方;"`
-	Pays          *IncomeAndOutcomeObj                  `json:"pays" form:"pays" gorm:"column:pays;comment:一堆预算列表;"`
+	Client        AmountOfIncomeOrOutComeStreamJSONArr `json:"client" form:"client" gorm:"column:client;comment:委托方;"`
+	LandingAgency AmountOfIncomeOrOutComeStreamJSONArr `json:"landingAgency" form:"landingAgency" gorm:"column:landing_agency;comment:落地机构;"`
+	Partner       AmountOfIncomeOrOutComeStreamJSONArr `json:"partner" form:"partner" gorm:"column:partner;comment:合作方;"`
+	Pays          IncomeAndOutcomeObj                  `json:"pays" form:"pays" gorm:"column:pays;comment:一堆预算列表;"`
 }
 
 // TableName IncomeStream 表名

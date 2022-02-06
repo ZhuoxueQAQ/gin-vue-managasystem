@@ -387,12 +387,7 @@
             </el-table-column>
           </template>
         </template>
-        <el-table-column
-          align="center"
-          label="按钮组"
-          fixed="right"
-          width="200"
-        >
+        <el-table-column align="center" label="操作" fixed="right" width="100">
           <template #default="scope">
             <el-button
               type="text"
@@ -401,12 +396,6 @@
               class="table-button"
               @click="updateIncomeStreamFunc(scope.row)"
             >变更</el-button>
-            <el-button
-              type="text"
-              icon="delete"
-              size="mini"
-              @click="deleteRow(scope.row)"
-            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -433,7 +422,6 @@ export default {
 
 <script setup>
 import {
-  deleteIncomeStream,
   deleteIncomeStreamByIds,
   getIncomeStreamList,
 } from '@/api/incomeStream'
@@ -661,17 +649,6 @@ const handleSelectionChange = (val) => {
   multipleSelection.value = val
 }
 
-// 删除行
-const deleteRow = (row) => {
-  ElMessageBox.confirm('确定要删除吗?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    colType: 'warning',
-  }).then(() => {
-    deleteIncomeStreamFunc(row)
-  })
-}
-
 // 批量删除控制标记
 const deleteVisible = ref(false)
 
@@ -722,21 +699,6 @@ const updateIncomeStreamFunc = async(row) => {
       id: row.ID,
     },
   })
-}
-
-// 删除行
-const deleteIncomeStreamFunc = async(row) => {
-  const res = await deleteIncomeStream({ ID: row.ID })
-  if (res.code === 0) {
-    ElMessage({
-      colType: 'success',
-      message: '删除成功',
-    })
-    if (tableData.value.length === 1 && page.value > 1) {
-      page.value--
-    }
-    getTableData()
-  }
 }
 
 // 更新系统设置

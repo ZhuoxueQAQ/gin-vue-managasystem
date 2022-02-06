@@ -365,9 +365,9 @@ const formData = ref({
   incomeAmount: undefined,
   invoice: '',
   incomeValidCode: '',
-  client: [{ name: '', radio: 0, amount: 0 }],
-  landingAgency: [{ name: '', radio: 0, amount: 0 }],
-  partner: [{ name: '', radio: 0, amount: 0 }],
+  client: [],
+  landingAgency: [],
+  partner: [],
   invoiceIssueDate: undefined,
   invoiceAmount: 0,
   invoiceCount: undefined,
@@ -377,6 +377,10 @@ const formData = ref({
   dAmount: 0,
   wAmount: 0,
   cAmount: 0,
+  sRadio: 0,
+  dRadio: 0,
+  wRadio: 0,
+  cRadio: 0,
   pays: {
     pg: 0,
     ph: 0,
@@ -540,7 +544,34 @@ const init = async() => {
     }
   } else if (route.query.project) {
     // 如果是从project那里点进来添加流水，合法，此时将所属项目的ID和名称先赋给该流水
+    // todo 在这里赋值，收入流水所属的项目id、名称、委托方、学校管理费比例。。等
+    const project = JSON.parse(route.query.project)
+    formData.value.projectId = project.id
+    formData.value.projectName = project.name
+    formData.value.sRadio = project.sRadio
+    formData.value.dRadio = project.dRadio
+    formData.value.wRadio = project.wRadio
+    formData.value.cRadio = project.cRadio
+    // 委托方、落地机构、合作方
+    project.client.forEach((c) => {
+      formData.value.client.push({ name: c.name, radio: c.radio, amount: 0 })
+    })
+    project.landingAgency.forEach((c) => {
+      formData.value.landingAgency.push({
+        name: c.name,
+        radio: c.radio,
+        amount: 0,
+      })
+    })
+    project.partner.forEach((c) => {
+      formData.value.partner.push({
+        name: c.name,
+        radio: c.radio,
+        amount: 0,
+      })
+    })
     type.value = 'create'
+    console.log(formData.value)
   } else {
     ElMessageBox.alert(
       '请前往“培训项目列表”中选择该流水所属的培训项目',
@@ -562,7 +593,6 @@ const submitForm = async() => {
       console.log(formData.value)
       switch (type.value) {
         case 'create':
-          // todo 在这里赋值，收入流水所属的项目id、名称、委托方、学校管理费比例。。等
           res = createIncomeStream(formData.value)
           break
         case 'update':
@@ -621,14 +651,18 @@ const resetForm = () => {
     incomeAmount: undefined,
     invoice: '',
     incomeValidCode: '',
-    client: [{ name: '', radio: 0, amount: 0 }],
-    landingAgency: [{ name: '', radio: 0, amount: 0 }],
-    partner: [{ name: '', radio: 0, amount: 0 }],
+    client: [],
+    landingAgency: [],
+    partner: [],
     invoiceIssueDate: undefined,
     invoiceAmount: 0,
     invoiceCount: undefined,
     invoiceCode: '',
     splitAmountDate: undefined,
+    sRadio: 0,
+    dRadio: 0,
+    wRadio: 0,
+    cRadio: 0,
     sAmount: 0,
     dAmount: 0,
     wAmount: 0,
