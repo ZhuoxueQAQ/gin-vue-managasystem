@@ -644,7 +644,7 @@ const getSummries = (param) => {
                 // 当显示的multi项较多时，对multi比较少的数据，越界访问会导致undefined
                 return item[col.prop][i] === undefined
                   ? NaN
-                  : item[col.prop][i][s.prop]
+                  : Number(item[col.prop][i][s.prop])
               })
               sums[index] =
                 !values.every((value) => isNaN(value)) && s.format === 'amount'
@@ -667,6 +667,18 @@ const getSummries = (param) => {
           }
         })
         break
+      case 'json':
+        col.sub.forEach((s) => {
+          if (s.show) {
+            const values = data.map((item) => Number(item[col.prop][s.prop]))
+            sums[index] =
+              !values.every((value) => isNaN(value)) && s.format === 'amount'
+                ? formatTableVal(sum(values), 'amount')
+                : ''
+            index++
+          }
+        })
+        break
       default:
         if (col.show) {
           const values = data.map((item) => Number(item[col.prop]))
@@ -679,7 +691,7 @@ const getSummries = (param) => {
         break
     }
   })
-  // 项目名称和备案申请日期不在tableCols里面，所以要加上
+  // todo change 项目名称和入账日期不在tableCols里面，所以要加上
   sums.unshift('合计', '', '')
   return sums
 }
@@ -843,7 +855,7 @@ const uploadProjectFilesFunc = async(row) => {
 
 // 更新行
 const updateProjectFunc = async(row) => {
-  console.log(row)
+  // todo 根据项目状态判断是否允许更新。如果已经不是立项状态了，就不允许。
   router.push({
     name: 'projectForm',
     query: {

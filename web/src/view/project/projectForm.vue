@@ -30,7 +30,23 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col :span="16">
+        <el-col :span="8">
+          <el-form-item
+            label-width="120px"
+            label="应收经费"
+            prop="projectAmount"
+          >
+            <el-input
+              v-model="formData.projectAmount"
+              placeholder="请输入项目应收经费"
+              clearable
+              :style="{ width: '100%' }"
+            >
+              <template #append>元</template>
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
           <el-form-item
             label-width="120px"
             label="收费标准"
@@ -50,7 +66,7 @@
               v-model="formData.createdDate"
               format="YYYY-MM-DD"
               :style="{ width: '100%' }"
-              placeholder="请输入备案申请日期备案日期"
+              placeholder="请输入备案申请日期"
               clearable
             />
           </el-form-item>
@@ -657,6 +673,18 @@ const rules = ref({
     {
       required: true,
       message: '请输入项目类型',
+      trigger: 'blur',
+    },
+  ],
+  projectAmount: [
+    {
+      required: true,
+      message: '请输入项目应收经费',
+      trigger: 'blur',
+    },
+    {
+      pattern: /^\d+(\.\d+)?$/,
+      message: '金额为非负数',
       trigger: 'blur',
     },
   ],

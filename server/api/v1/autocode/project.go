@@ -84,6 +84,8 @@ func (projectApi *ProjectApi) DeleteProjectByIds(c *gin.Context) {
 	}
 }
 
+// todo 添加一个修改状态的api。并且状态大于1以后不能在设置成0（立项状态）防止修改项目信息
+
 // UpdateProject 更新Project
 // @Tags Project
 // @Summary 更新Project
@@ -96,6 +98,8 @@ func (projectApi *ProjectApi) DeleteProjectByIds(c *gin.Context) {
 func (projectApi *ProjectApi) UpdateProject(c *gin.Context) {
 	var project autocode.Project
 	_ = c.ShouldBindJSON(&project)
+	// todo 检查状态，如果进行中不准更新
+
 	if err := projectService.UpdateProject(project); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
 		response.FailWithMessage("更新失败", c)

@@ -67,7 +67,7 @@
           <el-col :span="8">
             <el-form-item label="分账日期" prop="splitAmountDate">
               <el-date-picker
-                v-model="formData.invoiceIssueDate"
+                v-model="formData.splitAmountDate"
                 format="YYYY-MM-DD"
                 :style="{ width: '100%' }"
                 placeholder="请输入分账日期"
@@ -546,12 +546,16 @@ const init = async() => {
     // 如果是从project那里点进来添加流水，合法，此时将所属项目的ID和名称先赋给该流水
     // todo 在这里赋值，收入流水所属的项目id、名称、委托方、学校管理费比例。。等
     const project = JSON.parse(route.query.project)
-    formData.value.projectId = project.id
+    // init
+    formData.value.projectId = project.ID
     formData.value.projectName = project.name
     formData.value.sRadio = project.sRadio
     formData.value.dRadio = project.dRadio
     formData.value.wRadio = project.wRadio
     formData.value.cRadio = project.cRadio
+    formData.value.client = []
+    formData.value.landingAgency = []
+    formData.value.partner = []
     // 委托方、落地机构、合作方
     project.client.forEach((c) => {
       formData.value.client.push({ name: c.name, radio: c.radio, amount: 0 })
@@ -590,10 +594,9 @@ const submitForm = async() => {
   let res
   formRef.value.validate(async(valid) => {
     if (valid) {
-      console.log(formData.value)
       switch (type.value) {
         case 'create':
-          res = createIncomeStream(formData.value)
+          res = await createIncomeStream(formData.value)
           break
         case 'update':
           res = await updateIncomeStream(formData.value)
@@ -602,6 +605,7 @@ const submitForm = async() => {
           res = await createIncomeStream(formData.value)
           break
       }
+      console.log(res)
       if (res.code === 0) {
         switch (type.value) {
           case 'update': {
@@ -613,11 +617,21 @@ const submitForm = async() => {
             break
           }
           case 'create': {
-            ElMessage({
-              type: 'success',
-              message: `成功为项目：${formData.value.projectName}添加收入流水`,
-            })
-            resetForm()
+            ElMessageBox.confirm(
+              `成功为项目：${formData.value.projectName}添加收入流水`,
+              'success',
+              {
+                confirmButtonText: '继续为该项目添加流水',
+                cancelButtonText: '查看流水',
+                type: 'success',
+              }
+            )
+              .then(() => {
+                init()
+              })
+              .catch(() => {
+                router.push({ name: 'incomeStream' })
+              })
             break
           }
           default:
@@ -639,52 +653,7 @@ const back = () => {
 }
 
 // 重置
-const resetForm = () => {
-  formData.value = {
-    projectId: 0,
-    projectName: '',
-    categories: undefined,
-    createdDate: undefined,
-    isOffset: '',
-    isBorrowed: '',
-    payUnit: '',
-    incomeAmount: undefined,
-    invoice: '',
-    incomeValidCode: '',
-    client: [],
-    landingAgency: [],
-    partner: [],
-    invoiceIssueDate: undefined,
-    invoiceAmount: 0,
-    invoiceCount: undefined,
-    invoiceCode: '',
-    splitAmountDate: undefined,
-    sRadio: 0,
-    dRadio: 0,
-    wRadio: 0,
-    cRadio: 0,
-    sAmount: 0,
-    dAmount: 0,
-    wAmount: 0,
-    cAmount: 0,
-    pays: {
-      pg: 0,
-      ph: 0,
-      pi: 0,
-      pj: 0,
-      pk: 0,
-      pl: 0,
-      pm: 0,
-      pn: 0,
-      po: 0,
-      pp: 0,
-      pq: 0,
-      pr: 0,
-      ps: 0,
-      pt: 0,
-    },
-  }
-}
+const resetForm = () => {}
 </script>
 
 <style></style>

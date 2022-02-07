@@ -68,6 +68,14 @@ func DeleteProjectFile(record autocode.ProjectFileRecord) error {
 	return err
 }
 
+// DeleteProjectFiles 删除一个项目的所有附件
+func DeleteProjectFiles(projectID string) (err error) {
+	if err = os.RemoveAll(filepath.Join(finishDir, projectID)); err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetProjectFilePath(record autocode.ProjectFileRecord) string {
 	return filepath.Join(finishDir, record.ProjectID, record.FileTypeID, record.FileName)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/shopspring/decimal"
 	"log"
+	"strconv"
 )
 
 type ProjectService struct {
@@ -35,13 +36,38 @@ func (projectService *ProjectService) DeleteProject(project autocode.Project) (e
 // DeleteProjectByIds 批量删除Project记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) DeleteProjectByIds(ids request.IdsReq) (err error) {
-	err = global.GVA_DB.Delete(&[]autocode.Project{}, "id in ?", ids.Ids).Error
+	// todo delete project files and file records, incomestream and outcomestream
+	var projects []autocode.Project
+	if err = global.GVA_DB.Model(&[]autocode.Project{}).Where("id in ?", ids.Ids).Find(&projects).Error; err != nil {
+		return err
+	}
+	for _, p := range projects {
+		// 删除对应的收入流水
+		if err = global.GVA_DB.Unscoped().Delete(&autocode.IncomeStream{}, "project_id = ?", p.ID).Error; err != nil {
+			return err
+		}
+		// todo 删除对应的支出流水
+		// 删除对应的文件记录和文件
+		strProjectID := strconv.Itoa(int(p.ID))
+		if err = global.GVA_DB.Unscoped().Delete(&autocode.ProjectFileRecord{}, "project_id = ?", strProjectID).Error; err != nil {
+			return err
+		}
+		if err = utils.DeleteProjectFiles(strProjectID); err != nil {
+			return err
+		}
+		// 最后删除项目
+		if err = global.GVA_DB.Unscoped().Delete(&p).Error; err != nil {
+			return err
+		}
+	}
+	//err = global.GVA_DB.Delete(&[]autocode.Project{}, "id in ?", ids.Ids).Error
 	return err
 }
 
 // UpdateProject 更新Project记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (projectService *ProjectService) UpdateProject(project autocode.Project) (err error) {
+	// todo 如果已经有流水（不在立项状态了），不允许更新。
 	// 更新未到账金额(如果项目应收经费更新了)
 	project.UnpaidAmount = project.ProjectAmount.Sub(project.PaidAmount)
 	err = global.GVA_DB.Save(&project).Error
@@ -159,14 +185,13 @@ func (projectService *ProjectService) DeleteProjectFileByIds(ids request.IdsReq)
 		return err
 	}
 	for _, record := range records {
-		log.Println(record)
 		// 查询待删除的记录
 		// 删除文件
-		if err := utils.DeleteProjectFile(record); err != nil {
+		if err = utils.DeleteProjectFile(record); err != nil {
 			return err
 		}
 		// 删除文件记录
-		if err := global.GVA_DB.Model(&autocode.ProjectFileRecord{}).Delete(&record).Error; err != nil {
+		if err = global.GVA_DB.Unscoped().Delete(&record).Error; err != nil {
 			return err
 		}
 	}

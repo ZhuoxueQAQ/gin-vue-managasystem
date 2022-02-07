@@ -500,7 +500,7 @@ const getSummries = (param) => {
                 // 当显示的multi项较多时，对multi比较少的数据，越界访问会导致undefined
                 return item[col.prop][i] === undefined
                   ? NaN
-                  : item[col.prop][i][s.prop]
+                  : Number(item[col.prop][i][s.prop])
               })
               sums[index] =
                 !values.every((value) => isNaN(value)) && s.format === 'amount'
@@ -515,6 +515,18 @@ const getSummries = (param) => {
         col.sub.forEach((s) => {
           if (s.show) {
             const values = data.map((item) => Number(item[s.prop]))
+            sums[index] =
+              !values.every((value) => isNaN(value)) && s.format === 'amount'
+                ? formatTableVal(sum(values), 'amount')
+                : ''
+            index++
+          }
+        })
+        break
+      case 'json':
+        col.sub.forEach((s) => {
+          if (s.show) {
+            const values = data.map((item) => Number(item[col.prop][s.prop]))
             sums[index] =
               !values.every((value) => isNaN(value)) && s.format === 'amount'
                 ? formatTableVal(sum(values), 'amount')
@@ -609,7 +621,6 @@ const getTableData = async() => {
     searchInfo: JSON.stringify(searchInfo.value),
   })
   if (table.code === 0) {
-    console.log(table.data.list[0].pays.pg)
     tableData.value = table.data.list
     total.value = table.data.total
     page.value = table.data.page

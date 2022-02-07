@@ -27,6 +27,14 @@ type IncomeAndOutcomeObj struct {
 	Pt decimal.Decimal `json:"pt"`
 }
 
+func (i IncomeAndOutcomeObj) Value() (driver.Value, error) {
+	b, err := json.Marshal(i)
+	return string(b), err
+}
+func (i *IncomeAndOutcomeObj) Scan(input interface{}) error {
+	return json.Unmarshal(input.([]byte), i)
+}
+
 // IncomeAndOutcomeJSONArr 类型是一个数组，第一个元素为预算对象，第二个元素为支出对象
 type IncomeAndOutcomeJSONArr []IncomeAndOutcomeObj
 
@@ -35,13 +43,6 @@ func (i IncomeAndOutcomeJSONArr) Value() (driver.Value, error) {
 	return string(b), err
 }
 func (i *IncomeAndOutcomeJSONArr) Scan(input interface{}) error {
-	return json.Unmarshal(input.([]byte), i)
-}
-func (i IncomeAndOutcomeObj) Value() (driver.Value, error) {
-	b, err := json.Marshal(i)
-	return string(b), err
-}
-func (i *IncomeAndOutcomeObj) Scan(input interface{}) error {
 	return json.Unmarshal(input.([]byte), i)
 }
 
