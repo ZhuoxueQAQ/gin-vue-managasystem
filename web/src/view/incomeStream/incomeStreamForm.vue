@@ -84,7 +84,9 @@
                 placeholder="请输入入账金额"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -116,7 +118,9 @@
                 placeholder="请输入发票金额"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -148,7 +152,9 @@
                 placeholder="请输入专家课酬"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -158,7 +164,9 @@
                 placeholder="请输入方案费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -168,7 +176,9 @@
                 placeholder="请输入网络研修教学费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -180,7 +190,9 @@
                 placeholder="请输入管理及工作人员劳务费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -190,7 +202,9 @@
                 placeholder="请输入考察、跟岗、线下指导费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -200,7 +214,9 @@
                 placeholder="请输入专家食宿"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -212,7 +228,9 @@
                 placeholder="请输入专家及工作人员交通费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -222,7 +240,9 @@
                 placeholder="请输入学员伙食费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -232,7 +252,9 @@
                 placeholder="请输入学员住宿费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -244,7 +266,9 @@
                 placeholder="请输入学员交通费"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -254,7 +278,9 @@
                 placeholder="请输入场租"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
@@ -264,7 +290,9 @@
                 placeholder="请输入课程资源建设费(人员支出)"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -276,7 +304,9 @@
                 placeholder="请输入课程资源建设费(购买)"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
           <el-col :span="16">
@@ -290,7 +320,9 @@
                 placeholder="请输入培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
