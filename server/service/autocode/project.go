@@ -46,7 +46,10 @@ func (projectService *ProjectService) DeleteProjectByIds(ids request.IdsReq) (er
 		if err = global.GVA_DB.Unscoped().Delete(&autocode.IncomeStream{}, "project_id = ?", p.ID).Error; err != nil {
 			return err
 		}
-		// todo 删除对应的支出流水
+		// 删除对应的支出流水
+		if err = global.GVA_DB.Unscoped().Delete(&autocode.OutcomeStream{}, "project_id = ?", p.ID).Error; err != nil {
+			return err
+		}
 		// 删除对应的文件记录和文件
 		strProjectID := strconv.Itoa(int(p.ID))
 		if err = global.GVA_DB.Unscoped().Delete(&autocode.ProjectFileRecord{}, "project_id = ?", strProjectID).Error; err != nil {

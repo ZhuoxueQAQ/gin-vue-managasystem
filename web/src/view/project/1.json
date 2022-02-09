@@ -177,7 +177,7 @@
     "width": 0,
     "format": "",
     "colType": "multi",
-    "showList": [true, false, false],
+    "showList": [true, true, true],
     "maxSubItemNum": 0,
     "maxLengthIndex": 0
   },
@@ -226,7 +226,7 @@
     "width": 0,
     "format": "",
     "colType": "multi",
-    "showList": [true, false, false],
+    "showList": [true, true, true],
     "maxSubItemNum": 0,
     "maxLengthIndex": 0
   },
@@ -383,7 +383,7 @@
     "prop": "invoiceIssueDate",
     "show": true,
     "label": "发票开出日期",
-    "width": 100,
+    "width": 120,
     "format": "date",
     "colType": "",
     "showList": null,

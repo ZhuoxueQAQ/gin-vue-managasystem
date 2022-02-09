@@ -135,7 +135,7 @@ func (IncomeService *IncomeStreamService) DeleteIncomeStream(income autocode.Inc
 	// 更新对应的培训项目
 	var project autocode.Project
 	// 获取对应的培训项目
-	if err = global.GVA_DB.Where("id = ?", income.ProjectName).First(&project).Error; err != nil {
+	if err = global.GVA_DB.Where("id = ?", income.ProjectId).First(&project).Error; err != nil {
 		return err
 	}
 	project = UpdateProjectWhenDeleteIncomeStream(income, project)

@@ -21,29 +21,7 @@
         </el-row>
         <el-row type="flex" justify="start" align="center">
           <el-col :span="12">
-            <el-form-item label="是否预先借票" prop="isBorrowed">
-              <el-input
-                v-model="formData.isBorrowed"
-                placeholder="请输入是否预先借票"
-                clearable
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="是否已冲账" prop="isOffset">
-              <el-input
-                v-model="formData.isOffset"
-                placeholder="是否已冲账"
-                clearable
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row type="flex" justify="start" align="center">
-          <el-col :span="8">
-            <el-form-item label="入账日期" prop="createdDate">
+            <el-form-item label="支出日期" prop="createdDate">
               <el-date-picker
                 v-model="formData.createdDate"
                 format="YYYY-MM-DD"
@@ -53,35 +31,11 @@
               />
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="开票日期" prop="invoiceIssueDate">
-              <el-date-picker
-                v-model="formData.invoiceIssueDate"
-                format="YYYY-MM-DD"
-                :style="{ width: '100%' }"
-                placeholder="请输入开票日期"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="分账日期" prop="splitAmountDate">
-              <el-date-picker
-                v-model="formData.splitAmountDate"
-                format="YYYY-MM-DD"
-                :style="{ width: '100%' }"
-                placeholder="请输入分账日期"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row type="flex" justify="start" align="center">
-          <el-col :span="8">
-            <el-form-item label="入账金额" prop="incomeAmount">
+          <el-col :span="12">
+            <el-form-item label="支出项目码" prop="outcomeProjectCode">
               <el-input
-                v-model="formData.incomeAmount"
-                placeholder="请输入入账金额"
+                v-model="formData.outcomeProjectCode"
+                placeholder="请输入支出项目码"
                 clearable
                 :style="{ width: '100%' }"
               >
@@ -89,33 +43,21 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="发票抬头" prop="invoice">
-              <el-input
-                v-model="formData.invoice"
-                placeholder="请输入发票抬头"
-                clearable
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="入账凭证编码" prop="incomeValidCode">
-              <el-input
-                v-model="formData.incomeValidCode"
-                placeholder="请输入入账凭证编码"
-                clearable
-                :style="{ width: '100%' }"
-              />
-            </el-form-item>
-          </el-col>
         </el-row>
-        <el-row type="flex" justify="start" align="center">
-          <el-col :span="8">
-            <el-form-item label="发票金额" prop="invoiceAmount">
+        <el-row>
+          <el-col
+            v-for="(c, index) in formData.client"
+            :key="'client' + '-' + index + '-' + c.name"
+            :span="parseInt(24 / formData.client.length)"
+          >
+            <el-form-item
+              :label="`委托方${String(index + 1)}分成`"
+              :prop="'client.' + index + '.amount'"
+              :rules="rules.clp.amount"
+            >
               <el-input
-                v-model="formData.invoiceAmount"
-                placeholder="请输入发票金额"
+                v-model="c.amount"
+                placeholder="分成"
                 clearable
                 :style="{ width: '100%' }"
               >
@@ -123,24 +65,48 @@
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="发票数量" prop="invoiceCount">
+        </el-row>
+        <el-row>
+          <el-col
+            v-for="(c, index) in formData.landingAgency"
+            :key="'landingAgency' + '-' + index + '-' + c.name"
+            :span="parseInt(24 / formData.landingAgency.length)"
+          >
+            <el-form-item
+              :label="`落地机构${String(index + 1)}分成`"
+              :prop="'landingAgency.' + index + '.amount'"
+              :rules="rules.clp.amount"
+            >
               <el-input
-                v-model="formData.invoiceCount"
-                placeholder="请输入发票数量"
+                v-model="c.amount"
+                placeholder="分成"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item label="发票号码" prop="invoiceCode">
+        </el-row>
+        <el-row>
+          <el-col
+            v-for="(c, index) in formData.partner"
+            :key="'partner' + '-' + index + '-' + c.name"
+            :span="parseInt(24 / formData.partner.length)"
+          >
+            <el-form-item
+              :label="`技术方${String(index + 1)}分成`"
+              :prop="'partner.' + index + '.amount'"
+              :rules="rules.clp.amount"
+            >
               <el-input
-                v-model="formData.invoiceCode"
-                placeholder="请输入发票号码"
+                v-model="c.amount"
+                placeholder="分成"
                 clearable
                 :style="{ width: '100%' }"
-              />
+              >
+                <template #append>元</template>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -366,16 +332,16 @@
 
 <script>
 export default {
-  name: 'IncomeStream',
+  name: 'OutcomeStream',
 }
 </script>
 
 <script setup>
 import {
-  createIncomeStream,
-  updateIncomeStream,
-  findIncomeStream,
-} from '@/api/incomeStream'
+  createOutcomeStream,
+  updateOutcomeStream,
+  findOutcomeStream,
+} from '@/api/outcomeStream'
 
 // 自动获取字典
 import { useRoute, useRouter } from 'vue-router'
@@ -389,30 +355,12 @@ const type = ref('')
 const formData = ref({
   projectId: 0,
   projectName: '',
-  categories: undefined,
+  categories: '',
   createdDate: undefined,
-  isOffset: '',
-  isBorrowed: '',
-  payUnit: '',
-  incomeAmount: undefined,
-  invoice: '',
-  incomeValidCode: '',
+  outcomeProjectCode: '',
   client: [],
   landingAgency: [],
   partner: [],
-  invoiceIssueDate: undefined,
-  invoiceAmount: 0,
-  invoiceCount: undefined,
-  invoiceCode: '',
-  splitAmountDate: undefined,
-  sAmount: 0,
-  dAmount: 0,
-  wAmount: 0,
-  cAmount: 0,
-  sRadio: 0,
-  dRadio: 0,
-  wRadio: 0,
-  cRadio: 0,
   pays: {
     pg: 0,
     ph: 0,
@@ -434,34 +382,24 @@ const rules = ref({
   createdDate: [
     {
       required: true,
-      message: '请输入入账日期',
+      message: '请输入支出日期',
       trigger: 'blur',
     },
   ],
-  incomeAmount: [
-    {
-      required: true,
-      message: '请输入入账金额',
-      trigger: 'blur',
-    },
-    {
-      pattern: /^\d+(\.\d+)?$/,
-      message: '金额为非负数',
-      trigger: 'blur',
-    },
-  ],
-  invoiceCount: [
-    {
-      required: true,
-      message: '请输入发票数量',
-      trigger: 'blur',
-    },
-    {
-      pattern: /^\d+$/g,
-      message: '该项为非负整数',
-      trigger: 'blur',
-    },
-  ],
+  clp: {
+    amount: [
+      {
+        required: true,
+        message: '请输入分成金额',
+        trigger: 'blur',
+      },
+      {
+        pattern: /^\d+(\.\d+)?$/,
+        message: '金额为非负数',
+        trigger: 'blur',
+      },
+    ],
+  },
   // 一堆预算的校验
   pays: {
     pg: [
@@ -569,9 +507,10 @@ const rules = ref({
 const init = async() => {
   // 建议通过url传参获取目标数据ID 调用 find方法进行查询数据操作 从而决定本页面是create还是update 以下为id作为url参数示例
   if (route.query.id) {
-    const res = await findIncomeStream({ ID: route.query.id })
+    const res = await findOutcomeStream({ ID: route.query.id })
+    console.log(res)
     if (res.code === 0) {
-      formData.value = res.data.reIncome
+      formData.value = res.data.reoutcome
       type.value = 'update'
     }
   } else if (route.query.project) {
@@ -582,10 +521,6 @@ const init = async() => {
     formData.value.projectId = project.ID
     formData.value.projectName = project.name
     formData.value.categories = project.categories
-    formData.value.sRadio = project.sRadio
-    formData.value.dRadio = project.dRadio
-    formData.value.wRadio = project.wRadio
-    formData.value.cRadio = project.cRadio
     formData.value.client = []
     formData.value.landingAgency = []
     formData.value.partner = []
@@ -629,13 +564,13 @@ const submitForm = async() => {
     if (valid) {
       switch (type.value) {
         case 'create':
-          res = await createIncomeStream(formData.value)
+          res = await createOutcomeStream(formData.value)
           break
         case 'update':
-          res = await updateIncomeStream(formData.value)
+          res = await updateOutcomeStream(formData.value)
           break
         default:
-          res = await createIncomeStream(formData.value)
+          res = await createOutcomeStream(formData.value)
           break
       }
       console.log(res)
@@ -644,17 +579,17 @@ const submitForm = async() => {
           case 'update': {
             ElMessage({
               type: 'success',
-              message: `成功更新收入流水`,
+              message: `成功更新支出流水`,
             })
             back()
             break
           }
           case 'create': {
             ElMessageBox.confirm(
-              `成功为项目：${formData.value.projectName}添加收入流水`,
+              `成功为项目：${formData.value.projectName}添加支出流水`,
               'success',
               {
-                confirmButtonText: '继续为该项目添加流水',
+                confirmButtonText: '继续添加',
                 cancelButtonText: '查看流水',
                 type: 'success',
               }
@@ -663,7 +598,7 @@ const submitForm = async() => {
                 init()
               })
               .catch(() => {
-                router.push({ name: 'incomeStream' })
+                router.push({ name: 'outcomeStream' })
               })
             break
           }

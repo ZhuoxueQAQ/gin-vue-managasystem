@@ -23,8 +23,9 @@
 ::-webkit-scrollbar-thumb {
     background-color: #dddddd;
     background-clip: padding-box;
-    min-height: 28px;
+    min-height: 40px;
     border-radius: 4px;
+    width: 300px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
