@@ -177,3 +177,19 @@ export const downloadFile = (params) => {
     responseType: 'blob' // 制定响应类型
   })
 }
+
+// @Tags Project
+// @Summary 修改项目状态
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query model.Project true "修改项目状态"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"修改成功"}"
+// @Router /project/changeProjectStatus [post]
+export const changeProjectStatus = (data) => {
+  return service({
+    url: '/project/changeProjectStatus',
+    method: 'post',
+    data
+  })
+}

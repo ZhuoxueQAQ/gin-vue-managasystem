@@ -25,6 +25,8 @@ type IncomeAndOutcomeObj struct {
 	Pr decimal.Decimal `json:"pr"`
 	Ps decimal.Decimal `json:"ps"`
 	Pt decimal.Decimal `json:"pt"`
+	// total。在培训项目里面，project.IncomeAndOutcome[0].PTotal - project.IncomeAndOutcome[1].PTotal表示余额
+	PTotal decimal.Decimal `json:"pTotal"`
 }
 
 func (i IncomeAndOutcomeObj) Value() (driver.Value, error) {
@@ -100,18 +102,18 @@ type Project struct {
 	ProjectAmount decimal.Decimal `json:"projectAmount" sql:"type:decimal(12,2);" form:"projectAmount" gorm:"column:project_amount;comment:项目应收费用;"`
 	PaidAmount    decimal.Decimal `json:"paidAmount" sql:"type:decimal(12,2);" form:"paidAmount" gorm:"column:paid_amount;comment:已到账费用;"`
 	UnpaidAmount  decimal.Decimal `json:"unpaidAmount" sql:"type:decimal(12,2);" form:"unpaidAmount" gorm:"column:unpaid_amount;comment:未到账金额;"`
-
-	SRadio  decimal.Decimal `json:"sRadio" sql:"type:decimal(7,6);" form:"sRadio" gorm:"column:s_radio;comment:学校管理费比例;"`
-	DRadio  decimal.Decimal `json:"dRadio" sql:"type:decimal(7,6);" form:"dRadio" gorm:"column:d_radio;comment:发展基金比例;"`
-	WRadio  decimal.Decimal `json:"wRadio" sql:"type:decimal(7,6);" form:"wRadio" gorm:"column:w_radio;comment:福利比例;"`
-	CRadio  decimal.Decimal `json:"cRadio" sql:"type:decimal(7,6);" form:"cRadio" gorm:"column:c_radio;comment:课酬比例;"`
-	SAmount decimal.Decimal `json:"sAmount" sql:"type:decimal(12,2);" form:"SAmount" gorm:"column:s_amount;comment:学校管理费;"`
-	DAmount decimal.Decimal `json:"dAmount" sql:"type:decimal(12,2);" form:"dAmount" gorm:"column:d_amount;comment:发展基金;"`
-	WAmount decimal.Decimal `json:"wAmount" sql:"type:decimal(12,2);" form:"wAmount" gorm:"column:w_amount;comment:福利;"`
-	CAmount decimal.Decimal `json:"cAmount" sql:"type:decimal(12,2);" form:"cAmount" gorm:"column:c_amount;comment:课酬;"`
+	SRadio        decimal.Decimal `json:"sRadio" sql:"type:decimal(7,6);" form:"sRadio" gorm:"column:s_radio;comment:学校管理费比例;"`
+	DRadio        decimal.Decimal `json:"dRadio" sql:"type:decimal(7,6);" form:"dRadio" gorm:"column:d_radio;comment:发展基金比例;"`
+	WRadio        decimal.Decimal `json:"wRadio" sql:"type:decimal(7,6);" form:"wRadio" gorm:"column:w_radio;comment:福利比例;"`
+	CRadio        decimal.Decimal `json:"cRadio" sql:"type:decimal(7,6);" form:"cRadio" gorm:"column:c_radio;comment:课酬比例;"`
+	SAmount       decimal.Decimal `json:"sAmount" sql:"type:decimal(12,2);" form:"SAmount" gorm:"column:s_amount;comment:学校管理费;"`
+	DAmount       decimal.Decimal `json:"dAmount" sql:"type:decimal(12,2);" form:"dAmount" gorm:"column:d_amount;comment:发展基金;"`
+	WAmount       decimal.Decimal `json:"wAmount" sql:"type:decimal(12,2);" form:"wAmount" gorm:"column:w_amount;comment:福利;"`
+	CAmount       decimal.Decimal `json:"cAmount" sql:"type:decimal(12,2);" form:"cAmount" gorm:"column:c_amount;comment:课酬;"`
 
 	TrainNumOfPerson int `json:"trainNumOfPerson" form:"trainNumOfPerson" gorm:"column:train_num_of_person;comment:培训人数;size:19;"`
 	TrainTime        int `json:"trainTime" form:"trainTime" gorm:"column:train_time;comment:培训学时数;size:19;"`
+	Status           int `json:"status" form:"status" gorm:"column:status;comment:项目状态;size:100;"`
 
 	Client        AmountJSONArr `json:"client" form:"client" gorm:"type:json;column:client;comment:委托方;"`
 	LandingAgency AmountJSONArr `json:"landingAgency" form:"landingAgency" gorm:"type:json;column:landing_agency;comment:落地机构;"`
@@ -124,6 +126,11 @@ type Project struct {
 	ContractEndDate   time.Time `json:"contractEndDate" form:"contractEndDate" gorm:"type:date;column:contract_end_date;comment:合同结束时间;"`
 	TrainStartDate    time.Time `json:"trainStartDate" form:"trainStartDate" gorm:"type:date;column:train_start_date;comment:培训开始时间;"`
 	TrainEndDate      time.Time `json:"trainEndDate" form:"trainEndDate" gorm:"type:date;column:train_end_date;comment:培训结束时间;"`
+}
+
+type ProjectStatus struct {
+	ProjectId int `json:"projectId"`
+	Status    int `json:"status"`
 }
 
 // TableName Project 表名

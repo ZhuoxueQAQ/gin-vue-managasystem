@@ -98,7 +98,7 @@ func (projectApi *ProjectApi) DeleteProjectByIds(c *gin.Context) {
 func (projectApi *ProjectApi) UpdateProject(c *gin.Context) {
 	var project autocode.Project
 	_ = c.ShouldBindJSON(&project)
-	// todo 检查状态，如果进行中不准更新
+	// todo 检查状态，如果进行中，不准更新项目中一切会影响到收入和支出流水的信息
 
 	if err := projectService.UpdateProject(project); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
@@ -287,7 +287,7 @@ func (projectApi *ProjectApi) DeleteProjectFileByIds(c *gin.Context) {
 	}
 }
 
-//根据文件路径读取返回流文件 参数url
+//DownloadFile 根据文件路径读取返回流文件 参数url
 func (projectApi *ProjectApi) DownloadFile(c *gin.Context) {
 	var record autocode.ProjectFileRecord
 	// bind query
@@ -298,4 +298,24 @@ func (projectApi *ProjectApi) DownloadFile(c *gin.Context) {
 	c.Header("Content-Disposition", record.FileName)
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.File(path)
+}
+
+// ChangeProjectStatus 修改project的状态
+// @Tags Project
+// @Summary 修改project的状态
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body autocode.Project true "修改project的状态"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"修改成功"}"
+// @Router /project/createProject [post]
+func (projectApi *ProjectApi) ChangeProjectStatus(c *gin.Context) {
+	var projectStatus autocode.ProjectStatus
+	_ = c.ShouldBindJSON(&projectStatus)
+	if err := projectService.ChangeProjectStatus(projectStatus); err != nil {
+		global.GVA_LOG.Error("更新项目状态失败!", zap.Error(err))
+		response.FailWithMessage("更新失败", c)
+	} else {
+		response.OkWithMessage("更新成功", c)
+	}
 }

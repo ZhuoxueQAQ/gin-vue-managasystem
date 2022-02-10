@@ -1,6 +1,7 @@
 package autocode
 
 import (
+	"errors"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
@@ -203,4 +204,24 @@ func (projectService *ProjectService) DeleteProjectFileByIds(ids request.IdsReq)
 
 func (projectService *ProjectService) CreateUploadProjectFileRecord(record autocode.ProjectFileRecord) (err error) {
 	return global.GVA_DB.Create(&record).Error
+}
+
+func (projectService *ProjectService) ChangeProjectStatus(projectStatus autocode.ProjectStatus) (err error) {
+	if projectStatus.Status == 0 {
+		return errors.New("无法将项目状态修改为[立项]！")
+	}
+	if projectStatus.Status > 4 {
+		return errors.New("该状态未定义！")
+	}
+	var project autocode.Project
+	projectDB := global.GVA_DB.Model(&autocode.Project{})
+	// 获取对应的培训项目修改其状态
+	if err = projectDB.First(&project, projectStatus.ProjectId).Error; err != nil {
+		return err
+	}
+	// 只更新项目的状态列
+	if err = global.GVA_DB.Model(&project).Update("status", projectStatus.Status).Error; err != nil {
+		return err
+	}
+	return nil
 }

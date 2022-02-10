@@ -214,6 +214,7 @@
             <el-input
               v-model="formData.sRadio"
               placeholder="请输入学校管理费比例"
+              :disabled="editDisabled"
               clearable
               :style="{ width: '100%' }"
             >
@@ -226,6 +227,7 @@
             <el-input
               v-model="formData.dRadio"
               placeholder="请输入发展基金比例"
+              :disabled="editDisabled"
               clearable
               :style="{ width: '100%' }"
             >
@@ -238,6 +240,7 @@
             <el-input
               v-model="formData.wRadio"
               placeholder="请输入福利比例"
+              :disabled="editDisabled"
               clearable
               :style="{ width: '100%' }"
             >
@@ -250,6 +253,7 @@
             <el-input
               v-model="formData.cRadio"
               placeholder="请输入课酬比例"
+              :disabled="editDisabled"
               clearable
               :style="{ width: '100%' }"
             >
@@ -332,6 +336,7 @@
               placeholder="请输入名称"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             />
           </el-form-item>
         </el-col>
@@ -347,6 +352,7 @@
               placeholder="比例"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             >
               <template #append>%</template>
             </el-input>
@@ -376,6 +382,7 @@
             type="primary"
             icon="plus"
             class="table-button"
+            :disabled="editDisabled"
             @click="addFormListFunc('client')"
           >添加</el-button>
         </el-col>
@@ -385,6 +392,7 @@
             type="danger"
             icon="delete"
             class="table-button"
+            :disabled="editDisabled"
             @click="deleteFormListFunc('client', index)"
           >删除</el-button>
         </el-col>
@@ -407,6 +415,7 @@
               placeholder="请输入名称"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             />
           </el-form-item>
         </el-col>
@@ -422,6 +431,7 @@
               placeholder="比例"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             >
               <template #append>%</template>
             </el-input>
@@ -451,6 +461,7 @@
             icon="plus"
             type="primary"
             class="table-button"
+            :disabled="editDisabled"
             @click="addFormListFunc('landingAgency')"
           >添加</el-button>
         </el-col>
@@ -460,6 +471,7 @@
             type="danger"
             icon="delete"
             class="table-button"
+            :disabled="editDisabled"
             @click="deleteFormListFunc('landingAgency', index)"
           >删除</el-button>
         </el-col>
@@ -479,6 +491,7 @@
               placeholder="请输入名称"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             />
           </el-form-item>
         </el-col>
@@ -495,6 +508,7 @@
               placeholder="比例"
               clearable
               :style="{ width: '100%' }"
+              :disabled="editDisabled"
             >
               <template #append>%</template>
             </el-input>
@@ -524,6 +538,7 @@
             icon="plus"
             type="primary"
             class="table-button"
+            :disabled="editDisabled"
             @click="addFormListFunc('partner')"
           >添加</el-button>
         </el-col>
@@ -533,6 +548,7 @@
             icon="delete"
             type="danger"
             class="table-button"
+            :disabled="editDisabled"
             @click="deleteFormListFunc('partner', index)"
           >删除</el-button>
         </el-col>
@@ -595,9 +611,12 @@ const router = useRouter()
 const type = ref('')
 const maxFormRowNum = ref(3)
 const formRef = ref()
+// 处于非立项状态的项目，无法修改会影响到收入和支出流水的信息（如委托方、落地机构、学校管理费比例等）
+const editDisabled = ref(false)
 const formData = ref({
   name: '',
   categories: '',
+  status: 0,
   area: '',
   chargeStandard: '',
   manager: '',
@@ -641,6 +660,7 @@ const formData = ref({
       pr: 0.0,
       ps: 0.0,
       pt: 0.0,
+      pTotal: 0.0,
     },
     {
       pg: 0.0,
@@ -657,6 +677,7 @@ const formData = ref({
       pr: 0.0,
       ps: 0.0,
       pt: 0.0,
+      pTotal: 0.0,
     },
   ],
   remark: '',
@@ -826,6 +847,10 @@ const init = async() => {
     if (res.code === 0) {
       formData.value = res.data.reproject
       type.value = 'update'
+      // 如果状态为非立项状态
+      if (formData.value.status > 0) {
+        editDisabled.value = true
+      }
     }
   } else {
     type.value = 'create'
@@ -930,29 +955,70 @@ const resetForm = () => {
   formData.value = {
     name: '',
     categories: '',
-    chargeStandard: '',
-    createdDate: undefined,
-    manager: '',
-    projectCode: '',
+    status: 0,
     area: '',
-    trainMode: '',
-    trainNumOfPerson: 0,
-    trainTime: 0,
-    trainStartDate: undefined,
-    trainEndDate: undefined,
+    chargeStandard: '',
+    manager: '',
+    createdDate: undefined,
+    contractNum: '',
     contractStartDate: undefined,
     contractEndDate: undefined,
-    sRadio: 0,
-    sAmount: 0,
-    dRadio: 0,
-    dAmount: 0,
-    wRadio: 0,
-    wAmount: 0,
-    cRadio: 0,
-    cAmount: 0,
+    paidAmount: 0,
+    projectAmount: 0,
+    projectCode: '',
+    unpaidAmount: 0,
+    trainMode: '',
+    trainStartDate: undefined,
+    trainEndDate: undefined,
+    trainNumOfPerson: 0,
+    trainTime: 0,
     client: [{ name: '', radio: 0, amount: 0 }],
     landingAgency: [{ name: '', radio: 0, amount: 0 }],
     partner: [{ name: '', radio: 0, amount: 0 }],
+    sAmount: 0,
+    dAmount: 0,
+    wAmount: 0,
+    cAmount: 0,
+    sRadio: 0,
+    dRadio: 0,
+    wRadio: 0,
+    cRadio: 0,
+    incomeAndOutcome: [
+      {
+        pg: 0.0,
+        ph: 0.0,
+        pi: 0.0,
+        pj: 0.0,
+        pk: 0.0,
+        pl: 0.0,
+        pm: 0.0,
+        pn: 0.0,
+        po: 0.0,
+        pp: 0.0,
+        pq: 0.0,
+        pr: 0.0,
+        ps: 0.0,
+        pt: 0.0,
+        pTotal: 0.0,
+      },
+      {
+        pg: 0.0,
+        ph: 0.0,
+        pi: 0.0,
+        pj: 0.0,
+        pk: 0.0,
+        pl: 0.0,
+        pm: 0.0,
+        pn: 0.0,
+        po: 0.0,
+        pp: 0.0,
+        pq: 0.0,
+        pr: 0.0,
+        ps: 0.0,
+        pt: 0.0,
+        pTotal: 0.0,
+      },
+    ],
     remark: '',
   }
 }

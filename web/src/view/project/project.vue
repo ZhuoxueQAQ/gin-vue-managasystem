@@ -292,6 +292,73 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
+        <!-- 当前项目状态 -->
+        <el-table-column
+          align="center"
+          label="状态"
+          width="100"
+          prop="name"
+          fixed="left"
+        >
+          <template #default="scope">
+            <el-popover
+              :visible="statusPopoverVisible"
+              placement="top-start"
+              :width="220"
+            >
+              <template #reference>
+                <el-button
+                  plain
+                  size="mini"
+                  :type="getTagType(scope.row.status)"
+                  @click="handleShowProjectStatusPopover(scope.row.status)"
+                >{{ getStatus(scope.row.status) }}</el-button>
+              </template>
+              <div style="display: flex; gap: 16px; flex-direction: column">
+                <p>将项目状态修改为:</p>
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <el-select
+                    v-model="nowProjectStatus"
+                    size="small"
+                    style="width: 115px"
+                  >
+                    <el-option
+                      v-for="item in statusOptions"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                      :disabled="item.disabled"
+                    />
+                  </el-select>
+                  <div>
+                    <el-button
+                      plain
+                      size="mini"
+                      circle
+                      icon="close"
+                      type="danger"
+                      @click="statusPopoverVisible = false"
+                    />
+                    <el-button
+                      plain
+                      size="mini"
+                      icon="check"
+                      type="success"
+                      circle
+                      @click="handleChangeProjectStatus(scope.row)"
+                    />
+                  </div>
+                </div>
+              </div>
+            </el-popover>
+          </template>
+        </el-table-column>
         <!-- 项目名称 左固定 -->
         <el-table-column
           align="center"
@@ -383,6 +450,8 @@
               align="center"
               :show-overflow-tooltip="true"
               :width="col.width"
+              :fixed="col.fixed"
+              :sortable="col.sortable"
             >
               <template #default="scope">
                 <!-- todo format -->
@@ -426,6 +495,7 @@
                   :index="indexMethod"
                   width="50"
                   align="center"
+                  fixed="left"
                 />
                 <!-- todo 再创建一个模板，注意prop -->
                 <el-table-column
@@ -505,7 +575,11 @@ export default {
 </script>
 
 <script setup>
-import { deleteProjectByIds, getProjectList } from '@/api/project'
+import {
+  deleteProjectByIds,
+  getProjectList,
+  changeProjectStatus,
+} from '@/api/project'
 import {
   findManageSystemSetting,
   updateManageSystemSetting,
@@ -513,7 +587,7 @@ import {
 
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -556,6 +630,12 @@ const incomeAndOutcomeCols = ref([
     format: 'amount',
     width: 200,
   },
+  {
+    prop: 'pTotal',
+    label: '项目余额',
+    format: 'amount',
+    width: 150,
+  },
 ])
 // todo xiubug.
 const searchInfo = ref({
@@ -584,6 +664,32 @@ const searchInfo = ref({
   ],
 })
 const manageSystemSettingID = ref(1)
+// status
+const nowProjectStatus = ref(0)
+const statusPopoverVisible = ref(false)
+const statusOptions = [
+  {
+    value: 0,
+    label: '立项',
+    disabled: true,
+  },
+  {
+    value: 1,
+    label: '进行中',
+  },
+  {
+    value: 2,
+    label: '中止',
+  },
+  {
+    value: 3,
+    label: '作废',
+  },
+  {
+    value: 4,
+    label: '结项',
+  },
+]
 
 // 预算和支出的索引
 const indexMethod = (index) => {
@@ -768,7 +874,6 @@ const getTableData = async() => {
     searchInfo: JSON.stringify(searchInfo.value),
   })
   if (table.code === 0) {
-    // console.log(table.data.list)
     tableData.value = table.data.list
     total.value = table.data.total
     page.value = table.data.page
@@ -791,6 +896,75 @@ const getTableCols = async() => {
 getTableCols()
 // 获取表格数据
 getTableData()
+
+// 根据状态让标签显示不同的颜色
+const getTagType = (status) => {
+  switch (status) {
+    case 0:
+      return 'info'
+    case 1:
+      return 'primary'
+    case 2:
+      return 'warning'
+    case 3:
+      return 'danger'
+    case 4:
+      return 'success'
+    default:
+      return 'info'
+  }
+}
+const getStatus = (status) => {
+  switch (status) {
+    case 0:
+      return '立项'
+    case 1:
+      return '进行中'
+    case 2:
+      return '中止'
+    case 3:
+      return '作废'
+    case 4:
+      return '结项'
+    default:
+      return '立项'
+  }
+}
+
+// 显示修改项目状态pop时触发
+const handleShowProjectStatusPopover = (status) => {
+  nowProjectStatus.value = status
+  statusPopoverVisible.value = true
+}
+const handleChangeProjectStatus = (row) => {
+  ElMessageBox.confirm(
+    `确定将项目：${row.name}的状态更新为[${getStatus(
+      nowProjectStatus.value
+    )}]吗？`,
+    '提示',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'info',
+    }
+  )
+    .then(() => {
+      const params = {
+        projectId: row.ID,
+        status: nowProjectStatus.value,
+      }
+      changeProjectStatus(params).then((res) => {
+        if (res.code === 0) {
+          getTableData()
+          ElMessage.success('更新项目状态成功')
+          statusPopoverVisible.value = false
+        }
+      })
+    })
+    .catch(() => {
+      ElMessage('项目状态未更新')
+    })
+}
 
 // ============== 表格控制部分结束 ===============
 

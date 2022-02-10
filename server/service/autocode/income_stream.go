@@ -14,6 +14,10 @@ type IncomeStreamService struct {
 
 // UpdateProjectWhenCreateIncomeStream 在创建收入流水时计算收入流水的各项分成，以及更新到对应的培训项目中。传进去的income和project都会被修改
 func UpdateProjectWhenCreateIncomeStream(income autocode.IncomeStream, project autocode.Project) (autocode.IncomeStream, autocode.Project) {
+	// 如果是刚立项的项目，录入第一笔流水以后就设置成进行中状态，无法修改委托方等等的信息，这样在修改项目的时候就不用担心收入流水对不上了
+	if project.Status == 0 {
+		project.Status = 1
+	}
 	r := decimal.NewFromFloat(0.01)
 	// 入账金额
 	iAmount := income.IncomeAmount
@@ -47,6 +51,9 @@ func UpdateProjectWhenCreateIncomeStream(income autocode.IncomeStream, project a
 		project.DAmount = project.DAmount.Add(income.DAmount)
 		project.WAmount = project.WAmount.Add(income.WAmount)
 		project.CAmount = project.CAmount.Add(income.CAmount)
+		// todo 更新项目的总收入-总管理费
+		project.IncomeAndOutcome[0].PTotal = project.IncomeAndOutcome[0].PTotal.Add(iAmount).Sub(income.SAmount)
+
 	}
 	// 收入,这里就不用反射实现了。
 	project.IncomeAndOutcome[0].Pg = project.IncomeAndOutcome[0].Pg.Add(income.Pays.Pg)
@@ -90,6 +97,8 @@ func UpdateProjectWhenDeleteIncomeStream(income autocode.IncomeStream, project a
 		project.DAmount = project.DAmount.Sub(income.DAmount)
 		project.WAmount = project.WAmount.Sub(income.WAmount)
 		project.CAmount = project.CAmount.Sub(income.CAmount)
+		// todo 更新项目的总收入-总管理费。减去该流水的入账金额然后加上该流水的学校管理费
+		project.IncomeAndOutcome[0].PTotal = project.IncomeAndOutcome[0].PTotal.Sub(iAmount).Add(income.SAmount)
 	}
 	// 收入,这里就不用反射实现了。
 	project.IncomeAndOutcome[0].Pg = project.IncomeAndOutcome[0].Pg.Sub(income.Pays.Pg)

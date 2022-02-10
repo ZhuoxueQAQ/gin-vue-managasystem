@@ -22,6 +22,7 @@ func (s *ProjectRouter) InitProjectRouter(Router *gin.RouterGroup) {
 		projectRouter.PUT("updateProject", projectApi.UpdateProject)                      // 更新Project
 		projectRouter.POST("uploadProjectFileChunk", projectApi.UploadProjectChunk)       // 上传项目附件分片
 		projectRouter.POST("mergeProjectFileChunk", projectApi.MergeProjectFileChunk)     // 合并项目附件分片
+		projectRouter.POST("changeProjectStatus", projectApi.ChangeProjectStatus)         // 修改项目状态
 	}
 	{
 		projectRouterWithoutRecord.GET("findProject", projectApi.FindProject)                           // 根据ID获取Project

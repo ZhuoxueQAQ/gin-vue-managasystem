@@ -6,6 +6,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/shopspring/decimal"
 )
 
 type OutcomeStreamService struct {
@@ -13,18 +14,42 @@ type OutcomeStreamService struct {
 
 // UpdateProjectWhenCreateOutcomeStream 在创建支出流水时将流水的各项分成，更新到对应的培训项目中。传进去的project都会被修改
 func UpdateProjectWhenCreateOutcomeStream(outcome autocode.OutcomeStream, project autocode.Project) autocode.Project {
-	// todo：先计算流水的，再更新项目的
+	// 如果是刚立项的项目，录入第一笔流水以后就设置成进行中状态，无法修改委托方等等的信息，这样在修改项目的时候就不用担心收入流水对不上了
+	// 如果不是刚立项的项目，就不用在这里修改状态
+	if project.Status == 0 {
+		project.Status = 1
+	}
+	// todo：该笔流水的总支出金额
+	oAmount := decimal.NewFromFloat(0.0)
 	// range中的e是拷贝的副本。。。，所以表达式左边用索引获取第几个合作方
 	for index, e := range project.Client {
 		// 然后更新对应项目的对应分成。下面同理
 		project.Client[index].OutcomeAmount = e.OutcomeAmount.Add(outcome.Client[index].Amount)
+		oAmount = oAmount.Add(outcome.Client[index].Amount)
 	}
 	for index, e := range project.LandingAgency {
 		project.LandingAgency[index].OutcomeAmount = e.OutcomeAmount.Add(outcome.LandingAgency[index].Amount)
+		oAmount = oAmount.Add(outcome.LandingAgency[index].Amount)
 	}
 	for index, e := range project.Partner {
 		project.Partner[index].OutcomeAmount = e.OutcomeAmount.Add(outcome.Partner[index].Amount)
+		oAmount = oAmount.Add(outcome.Partner[index].Amount)
 	}
+	// 把专家课酬这些费用累加到该笔支出流水的总支出
+	oAmount = oAmount.Add(outcome.Pays.Pg)
+	oAmount = oAmount.Add(outcome.Pays.Ph)
+	oAmount = oAmount.Add(outcome.Pays.Pi)
+	oAmount = oAmount.Add(outcome.Pays.Pj)
+	oAmount = oAmount.Add(outcome.Pays.Pk)
+	oAmount = oAmount.Add(outcome.Pays.Pl)
+	oAmount = oAmount.Add(outcome.Pays.Pm)
+	oAmount = oAmount.Add(outcome.Pays.Pn)
+	oAmount = oAmount.Add(outcome.Pays.Po)
+	oAmount = oAmount.Add(outcome.Pays.Pp)
+	oAmount = oAmount.Add(outcome.Pays.Pq)
+	oAmount = oAmount.Add(outcome.Pays.Pr)
+	oAmount = oAmount.Add(outcome.Pays.Ps)
+	oAmount = oAmount.Add(outcome.Pays.Pt)
 
 	// IncomeAndOutcome是一个数组。IncomeAndOutcome[0]标识收入，IncomeAndOutcome[1]标识支出,这里就不用反射实现了。
 	project.IncomeAndOutcome[1].Pg = project.IncomeAndOutcome[1].Pg.Add(outcome.Pays.Pg)
@@ -41,23 +66,48 @@ func UpdateProjectWhenCreateOutcomeStream(outcome autocode.OutcomeStream, projec
 	project.IncomeAndOutcome[1].Pr = project.IncomeAndOutcome[1].Pr.Add(outcome.Pays.Pr)
 	project.IncomeAndOutcome[1].Ps = project.IncomeAndOutcome[1].Ps.Add(outcome.Pays.Ps)
 	project.IncomeAndOutcome[1].Pt = project.IncomeAndOutcome[1].Pt.Add(outcome.Pays.Pt)
+
+	// 更新项目总支出。因为是添加支出流水，所以余额是变少
+	project.IncomeAndOutcome[1].PTotal = project.IncomeAndOutcome[1].PTotal.Add(oAmount)
 	return project
 }
 
 // UpdateProjectWhenDeleteOutcomeStream 在删除支出流水时更新到对应的培训项目中。传进去的project会被修改
 func UpdateProjectWhenDeleteOutcomeStream(outcome autocode.OutcomeStream, project autocode.Project) autocode.Project {
+	// todo：该笔流水的总支出金额
+	oAmount := decimal.NewFromFloat(0.0)
 	// 当入账金额>0的时候，计算收入流水的xx分成，并更新项目的xx分成。
 	for index, e := range project.Client {
 		// 更新对应项目的对应分成。下面同理
 		project.Client[index].OutcomeAmount = e.OutcomeAmount.Sub(outcome.Client[index].Amount)
+		oAmount = oAmount.Add(outcome.Client[index].Amount)
 	}
 	for index, e := range project.LandingAgency {
 		project.LandingAgency[index].OutcomeAmount = e.OutcomeAmount.Sub(outcome.LandingAgency[index].Amount)
+		oAmount = oAmount.Add(outcome.LandingAgency[index].Amount)
 	}
 	for index, e := range project.Partner {
 		project.Partner[index].OutcomeAmount = e.OutcomeAmount.Sub(outcome.Partner[index].Amount)
+		oAmount = oAmount.Add(outcome.Partner[index].Amount)
 	}
-	// 支出,这里就不用反射实现了。
+
+	// 把专家课酬这些费用累加到该笔支出流水的总支出
+	oAmount = oAmount.Add(outcome.Pays.Pg)
+	oAmount = oAmount.Add(outcome.Pays.Ph)
+	oAmount = oAmount.Add(outcome.Pays.Pi)
+	oAmount = oAmount.Add(outcome.Pays.Pj)
+	oAmount = oAmount.Add(outcome.Pays.Pk)
+	oAmount = oAmount.Add(outcome.Pays.Pl)
+	oAmount = oAmount.Add(outcome.Pays.Pm)
+	oAmount = oAmount.Add(outcome.Pays.Pn)
+	oAmount = oAmount.Add(outcome.Pays.Po)
+	oAmount = oAmount.Add(outcome.Pays.Pp)
+	oAmount = oAmount.Add(outcome.Pays.Pq)
+	oAmount = oAmount.Add(outcome.Pays.Pr)
+	oAmount = oAmount.Add(outcome.Pays.Ps)
+	oAmount = oAmount.Add(outcome.Pays.Pt)
+
+	// 专家课酬这些费用..,这里就不用反射实现了。
 	project.IncomeAndOutcome[1].Pg = project.IncomeAndOutcome[1].Pg.Sub(outcome.Pays.Pg)
 	project.IncomeAndOutcome[1].Ph = project.IncomeAndOutcome[1].Ph.Sub(outcome.Pays.Ph)
 	project.IncomeAndOutcome[1].Pi = project.IncomeAndOutcome[1].Pi.Sub(outcome.Pays.Pi)
@@ -72,6 +122,9 @@ func UpdateProjectWhenDeleteOutcomeStream(outcome autocode.OutcomeStream, projec
 	project.IncomeAndOutcome[1].Pr = project.IncomeAndOutcome[1].Pr.Sub(outcome.Pays.Pr)
 	project.IncomeAndOutcome[1].Ps = project.IncomeAndOutcome[1].Ps.Sub(outcome.Pays.Ps)
 	project.IncomeAndOutcome[1].Pt = project.IncomeAndOutcome[1].Pt.Sub(outcome.Pays.Pt)
+
+	// 更新项目余额。因为是删除支出流水，所以余额是变多
+	project.IncomeAndOutcome[1].PTotal = project.IncomeAndOutcome[1].PTotal.Sub(oAmount)
 	return project
 }
 
