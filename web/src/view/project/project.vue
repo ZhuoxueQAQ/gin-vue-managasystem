@@ -1032,6 +1032,12 @@ const createProjectFunc = async() => {
 }
 
 const uploadProjectFilesFunc = async(row) => {
+  if (row.status === 2 || row.status === 3) {
+    ElMessage.error(
+      `项目处于 [${getStatus(row.status)}] 状态，无法上传项目附件`
+    )
+    return
+  }
   router.push({
     name: 'projectFiles',
     query: {
@@ -1043,6 +1049,10 @@ const uploadProjectFilesFunc = async(row) => {
 // 更新行
 const updateProjectFunc = async(row) => {
   // todo 根据项目状态判断是否允许更新。如果已经不是立项状态了，就不允许。
+  if (row.status === 2 || row.status === 3) {
+    ElMessage.error(`项目处于 [${getStatus(row.status)}] 状态，无法编辑`)
+    return
+  }
   router.push({
     name: 'projectForm',
     query: {
@@ -1075,6 +1085,12 @@ const handleExcelExport = () => {}
 
 // 创建收入流水
 const createIncomeStreamFunc = (row) => {
+  if (row.status === 2 || row.status === 3) {
+    ElMessage.error(
+      `项目处于 [${getStatus(row.status)}] 状态，无法录入收入流水`
+    )
+    return
+  }
   router.push({
     name: 'incomeStreamForm',
     query: {
@@ -1084,6 +1100,12 @@ const createIncomeStreamFunc = (row) => {
 }
 // 支出流水
 const createOutcomeStreamFunc = (row) => {
+  if (row.status === 2 || row.status === 3) {
+    ElMessage.error(
+      `项目处于 [${getStatus(row.status)}] 状态，无法录入支出流水`
+    )
+    return
+  }
   router.push({
     name: 'outcomeStreamForm',
     query: {
