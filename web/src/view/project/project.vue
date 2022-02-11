@@ -356,7 +356,9 @@
                       icon="check"
                       type="success"
                       circle
-                      @click="handleChangeProjectStatus(scope.index, scope.row)"
+                      @click="
+                        handleChangeProjectStatus(scope.$index, scope.row)
+                      "
                     />
                   </div>
                 </div>
