@@ -239,9 +239,6 @@ func (outcomeService *OutcomeStreamService) GetOutcomeStreamInfoList(info autoCo
 	if info.OutcomeProjectCode != "" {
 		db = db.Where("outcome_project_code LIKE ?", "%"+info.OutcomeProjectCode+"%")
 	}
-	if info.CreatedDate != nil {
-		db = db.Where("created_date <> ?", info.CreatedDate)
-	}
 	for index, date := range info.CreatedDateRange {
 		query := "created_date >= ?"
 		if index == 1 {

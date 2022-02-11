@@ -302,7 +302,7 @@
         >
           <template #default="scope">
             <el-popover
-              :visible="statusPopoverVisible"
+              :visible="statusPopoverVisible[scope.$index]"
               placement="top-start"
               :width="220"
             >
@@ -311,7 +311,12 @@
                   plain
                   size="mini"
                   :type="getTagType(scope.row.status)"
-                  @click="handleShowProjectStatusPopover(scope.row.status)"
+                  @click="
+                    handleShowProjectStatusPopover(
+                      scope.$index,
+                      scope.row.status
+                    )
+                  "
                 >{{ getStatus(scope.row.status) }}</el-button>
               </template>
               <div style="display: flex; gap: 16px; flex-direction: column">
@@ -343,7 +348,7 @@
                       circle
                       icon="close"
                       type="danger"
-                      @click="statusPopoverVisible = false"
+                      @click="statusPopoverVisible[scope.$index] = false"
                     />
                     <el-button
                       plain
@@ -351,7 +356,7 @@
                       icon="check"
                       type="success"
                       circle
-                      @click="handleChangeProjectStatus(scope.row)"
+                      @click="handleChangeProjectStatus(scope.index, scope.row)"
                     />
                   </div>
                 </div>
@@ -473,7 +478,7 @@
             <el-popover
               placement="top-start"
               :width="500"
-              trigger="hover"
+              trigger="click"
               border
             >
               <template #reference>
@@ -519,7 +524,7 @@
         </el-table-column>
         <el-table-column align="center" label="操作" fixed="right" width="60">
           <template #default="scope">
-            <el-popover placement="left" :width="40" trigger="hover">
+            <el-popover placement="left" :width="150" trigger="click">
               <template #reference>
                 <el-button size="medium" type="text" icon="setting" />
               </template>
@@ -666,7 +671,7 @@ const searchInfo = ref({
 const manageSystemSettingID = ref(1)
 // status
 const nowProjectStatus = ref(0)
-const statusPopoverVisible = ref(false)
+const statusPopoverVisible = ref([])
 const statusOptions = [
   {
     value: 0,
@@ -878,6 +883,11 @@ const getTableData = async() => {
     total.value = table.data.total
     page.value = table.data.page
     pageSize.value = table.data.pageSize
+    // init po list
+    statusPopoverVisible.value = []
+    for (let i = 0; i < tableData.value.length; i++) {
+      statusPopoverVisible.value.push(false)
+    }
   }
 }
 
@@ -932,11 +942,12 @@ const getStatus = (status) => {
 }
 
 // 显示修改项目状态pop时触发
-const handleShowProjectStatusPopover = (status) => {
+const handleShowProjectStatusPopover = (rowIndex, status) => {
   nowProjectStatus.value = status
-  statusPopoverVisible.value = true
+  statusPopoverVisible.value[rowIndex] = true
+  console.log(statusPopoverVisible.value, rowIndex)
 }
-const handleChangeProjectStatus = (row) => {
+const handleChangeProjectStatus = (rowIndex, row) => {
   ElMessageBox.confirm(
     `确定将项目：${row.name}的状态更新为[${getStatus(
       nowProjectStatus.value
@@ -957,7 +968,7 @@ const handleChangeProjectStatus = (row) => {
         if (res.code === 0) {
           getTableData()
           ElMessage.success('更新项目状态成功')
-          statusPopoverVisible.value = false
+          statusPopoverVisible.value[rowIndex] = false
         }
       })
     })
