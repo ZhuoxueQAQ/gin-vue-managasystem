@@ -806,8 +806,8 @@ const getSummries = (param) => {
         break
     }
   })
-  // todo change 项目名称和入账日期不在tableCols里面，所以要加上
-  sums.unshift('合计', '', '')
+  // todo change 项目名称、备案申请日期和状态不在tableCols里面，所以要加上
+  sums.unshift('合计', '', '', '')
   return sums
 }
 
