@@ -247,7 +247,7 @@ func (projectService *ProjectService) ExportToExcel(projects []autocode.Project)
 	// 插入project data
 	for _, p := range projects {
 		left := []interface{}{
-			p.Status, p.Name, utils.FormatDate(p.CreatedDate, false), p.Categories, p.Area, p.ChargeStandard, p.Manager, p.TrainMode,
+			utils.FormatProjectStatus(p.Status), p.Name, utils.FormatDate(p.CreatedDate, false), p.Categories, p.Area, p.ChargeStandard, p.Manager, p.TrainMode,
 			p.TrainTime, utils.FormatDate(p.TrainStartDate, false), utils.FormatDate(p.TrainEndDate, false),
 			utils.FormatDate(p.ContractStartDate, false), utils.FormatDate(p.ContractEndDate, false),
 			p.ProjectAmount, p.PaidAmount, p.UnpaidAmount,

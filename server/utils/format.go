@@ -17,3 +17,20 @@ func FormatDate(val time.Time, dateTime bool) string {
 		return res
 	}
 }
+
+func FormatProjectStatus(status int) string {
+	switch status {
+	case 0:
+		return "立项"
+	case 1:
+		return "进行中"
+	case 2:
+		return "中止"
+	case 3:
+		return "作废"
+	case 4:
+		return "结项"
+	default:
+		return "undefined"
+	}
+}

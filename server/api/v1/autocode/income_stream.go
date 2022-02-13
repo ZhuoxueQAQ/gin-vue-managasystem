@@ -2,6 +2,7 @@ package autocode
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autocodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
@@ -72,7 +73,7 @@ func (IncomeApi *IncomeStreamApi) DeleteIncomeStreamByIds(c *gin.Context) {
 	_ = c.ShouldBindJSON(&IDS)
 	if err := IncomeService.DeleteIncomeStreamByIds(IDS); err != nil {
 		global.GVA_LOG.Error("批量删除失败!", zap.Error(err))
-		response.FailWithMessage("批量删除失败", c)
+		response.FailWithMessage(fmt.Sprintf("批量删除失败:%d", err.Error()), c)
 	} else {
 		response.OkWithMessage("批量删除成功", c)
 	}
@@ -92,7 +93,7 @@ func (IncomeApi *IncomeStreamApi) UpdateIncomeStream(c *gin.Context) {
 	_ = c.ShouldBindJSON(&Income)
 	if err := IncomeService.UpdateIncomeStream(Income); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
-		response.FailWithMessage("更新失败", c)
+		response.FailWithMessage(fmt.Sprintf("更新失败:%d", err), c)
 	} else {
 		response.OkWithMessage("更新成功", c)
 	}

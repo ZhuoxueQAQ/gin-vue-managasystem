@@ -1,11 +1,13 @@
 package autocode
 
 import (
+	"errors"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/autocode"
 	autoCodeReq "github.com/flipped-aurora/gin-vue-admin/server/model/autocode/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/shopspring/decimal"
 )
 
@@ -137,6 +139,11 @@ func (outcomeService *OutcomeStreamService) CreateOutcomeStream(outcome autocode
 	if err = projectDb.First(&project, outcome.ProjectId).Error; err != nil {
 		return err
 	}
+	// todo 状态不是“进行中|立项”的时候不允许创建收入和支出流水
+	if project.Status > 1 {
+		err = errors.New(fmt.Sprintf("该流水所属的项目%d处于[%d]状态，无法修改流水", project.Name, utils.FormatProjectStatus(project.Status)))
+		return err
+	}
 	project = UpdateProjectWhenCreateOutcomeStream(outcome, project)
 	// 把新的支出流水和更新了的培训项目添加到db
 	if err = projectDb.Save(&project).Error; err != nil {
@@ -153,6 +160,11 @@ func (outcomeService *OutcomeStreamService) DeleteOutcomeStream(outcome autocode
 	projectDb := global.GVA_DB.Model(&autocode.Project{})
 	// 获取对应的培训项目
 	if err = projectDb.First(&project, outcome.ProjectId).Error; err != nil {
+		return err
+	}
+	// todo 状态不是“进行中”的时候不允许更新收入和支出流水
+	if project.Status != 1 {
+		err = errors.New(fmt.Sprintf("该流水所属的项目%d处于[%d]状态，无法修改流水", project.Name, utils.FormatProjectStatus(project.Status)))
 		return err
 	}
 	project = UpdateProjectWhenDeleteOutcomeStream(outcome, project)
@@ -178,6 +190,11 @@ func (outcomeService *OutcomeStreamService) DeleteOutcomeStreamByIds(ids request
 		if err = global.GVA_DB.Where("id = ?", outcome.ProjectId).First(&project).Error; err != nil {
 			return err
 		}
+		// 状态不是“进行中”的时候不允许更新收入和支出流水
+		if project.Status != 1 {
+			err = errors.New(fmt.Sprintf("该流水所属的项目%d处于[%d]状态，无法删除流水", project.Name, utils.FormatProjectStatus(project.Status)))
+			return err
+		}
 		// 更新培训项目
 		project = UpdateProjectWhenDeleteOutcomeStream(outcome, project)
 		if err = global.GVA_DB.Unscoped().Delete(&outcome).Error; err != nil {
@@ -198,6 +215,11 @@ func (outcomeService *OutcomeStreamService) UpdateOutcomeStream(outcome autocode
 	var project autocode.Project
 	var outcomeBeforeUpdate autocode.OutcomeStream
 	if err = global.GVA_DB.Where("id = ?", outcome.ProjectId).First(&project).Error; err != nil {
+		return err
+	}
+	// todo 状态不是“进行中”的时候不允许更新收入和支出流水
+	if project.Status != 1 {
+		err = errors.New(fmt.Sprintf("该流水所属的项目%d处于[%d]状态，无法修改流水", project.Name, utils.FormatProjectStatus(project.Status)))
 		return err
 	}
 	// 找到更新前的收入流水
