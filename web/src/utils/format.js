@@ -72,8 +72,13 @@ export const formatFileSize = (size) => {
 export const formatTableVal = (value, format) => {
   try {
     switch (format) {
-      case 'date':
-        return formatDate(value, 'yyyy-MM-dd')
+      case 'date': {
+        const res = formatDate(value, 'yyyy-MM-dd')
+        if (res === '1-01-01') {
+          return ''
+        }
+        return res
+      }
       case 'dateTime':
         return formatDate(value, 'yyyy-MM-dd hh:mm:ss')
       case 'amount':

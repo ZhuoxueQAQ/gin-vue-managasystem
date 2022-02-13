@@ -215,6 +215,7 @@ export default {
 <script setup>
 // 全量引入格式化工具 请按需保留
 import { formatTableVal } from '@/utils/format'
+import { saveAs } from '@/utils/download'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, watch } from 'vue'
 import SparkMD5 from 'spark-md5'
@@ -522,24 +523,6 @@ watch(uploadedNum, () => {
   }
 })
 
-const saveAs = (data, fileName) => {
-  const blob = new Blob([data])
-  if ('download' in document.createElement('a')) {
-    // 不是IE浏览器
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.href = url
-    link.setAttribute('download', fileName)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link) // 下载完成移除元素
-    window.URL.revokeObjectURL(url) // 释放掉blob对象
-  } else {
-    // IE 10+
-    window.navigator.msSaveBlob(blob, fileName)
-  }
-}
 // 下载文件
 const downloadFileFunc = async(row) => {
   const params = {

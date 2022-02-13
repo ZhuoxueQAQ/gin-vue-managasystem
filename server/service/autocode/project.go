@@ -9,7 +9,9 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/shopspring/decimal"
+	"github.com/xuri/excelize/v2"
 	"log"
+	"path/filepath"
 	"strconv"
 )
 
@@ -87,7 +89,7 @@ func (projectService *ProjectService) GetProject(id uint) (err error, project au
 
 // GetProjectInfoList 分页获取Project记录
 // Author [piexlmax](https://github.com/piexlmax)
-func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.ProjectSearch) (err error, list interface{},
+func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.ProjectSearch, isExport bool) (err error, list []autocode.Project,
 	total int64) {
 
 	// 创建db
@@ -156,9 +158,11 @@ func (projectService *ProjectService) GetProjectInfoList(info autoCodeReq.Projec
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&projects).Error
-
-	// todo 导出的时候，取消分页，返回total。前端来进行导出？
+	if isExport {
+		err = db.Find(&projects).Error
+	} else {
+		err = db.Limit(limit).Offset(offset).Find(&projects).Error
+	}
 
 	return err, projects, total
 }
@@ -224,4 +228,119 @@ func (projectService *ProjectService) ChangeProjectStatus(projectStatus autocode
 		return err
 	}
 	return nil
+}
+
+func (projectService *ProjectService) ExportToExcel(projects []autocode.Project) (err error, path string) {
+	f := excelize.NewFile()
+	sheetName := "表"
+	f.SetSheetName("Sheet1", sheetName)
+	data := [][]interface{}{
+		{"状态", "项目名称", "备案申请日期", "项目分类", "项目所属地", "收费标准", "负责人", "培训模式", "学时数", "培训开始时间", "培训结束时间",
+			"合同开始时间", "合同结束时间", "项目应收费用", "已到账费用", "未到账金额", "委托方1", nil, nil, nil, "委托方2", nil, nil, nil,
+			"委托方3", nil, nil, nil, "落地机构1", nil, nil, nil, "落地机构2", nil, nil, nil, "落地机构3", nil, nil, nil, "技术方1", nil, nil, nil,
+			"技术方2", nil, nil, nil, "技术方3", nil, nil, nil, "学校管理费180043", nil, "发展基金210098", nil, "福利220121", nil, "课酬440120", nil,
+			"专家课酬", nil, "方案费", nil, "网络研修教学费", nil, "管理及工作人员劳务费", nil, "考察、跟岗、线下指导费", nil, "专家食宿", nil,
+			"专家及工作人员交通费", nil, "学员伙食费", nil, "学员住宿费", nil, "学员交通费", nil, "场租", nil, "课程资源建设费(人员支出)", nil,
+			"课程资源建设费(购买)", nil, "培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)", nil, "余额", "备注"},
+		{nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "名称", "分成比例", "分成(预算)", "分成(支出)", "比例", "分成", "比例", "分成", "比例", "分成", "比例", "分成", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", "预算", "支出", nil, nil},
+	}
+	// 插入project data
+	for _, p := range projects {
+		left := []interface{}{
+			p.Status, p.Name, utils.FormatDate(p.CreatedDate, false), p.Categories, p.Area, p.ChargeStandard, p.Manager, p.TrainMode,
+			p.TrainTime, utils.FormatDate(p.TrainStartDate, false), utils.FormatDate(p.TrainEndDate, false),
+			utils.FormatDate(p.ContractStartDate, false), utils.FormatDate(p.ContractEndDate, false),
+			p.ProjectAmount, p.PaidAmount, p.UnpaidAmount,
+		}
+		targetNum := 3
+		for _, c := range p.Client {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.IncomeAmount, c.OutcomeAmount}
+			left = append(left, tmp...)
+		}
+		for i := len(p.Client) * 4; i < targetNum*4; i++ {
+			left = append(left, nil)
+		}
+		for _, c := range p.LandingAgency {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.IncomeAmount, c.OutcomeAmount}
+			left = append(left, tmp...)
+		}
+		for i := len(p.LandingAgency) * 4; i < targetNum*4; i++ {
+			left = append(left, nil)
+		}
+		for _, c := range p.Partner {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.IncomeAmount, c.OutcomeAmount}
+			left = append(left, tmp...)
+		}
+		for i := len(p.Partner) * 4; i < targetNum*4; i++ {
+			left = append(left, nil)
+		}
+		right := []interface{}{
+			p.SRadio.String() + "%", p.SAmount, p.DRadio.String() + "%", p.DAmount, p.WRadio.String() + "%", p.WAmount, p.CRadio.String() + "%", p.CAmount,
+			p.IncomeAndOutcome[0].Pg, p.IncomeAndOutcome[1].Pg, p.IncomeAndOutcome[0].Ph, p.IncomeAndOutcome[1].Ph,
+			p.IncomeAndOutcome[0].Pi, p.IncomeAndOutcome[1].Pi, p.IncomeAndOutcome[0].Pj, p.IncomeAndOutcome[1].Pj,
+			p.IncomeAndOutcome[0].Pk, p.IncomeAndOutcome[1].Pk, p.IncomeAndOutcome[0].Pl, p.IncomeAndOutcome[1].Pl,
+			p.IncomeAndOutcome[0].Pm, p.IncomeAndOutcome[1].Pm, p.IncomeAndOutcome[0].Pn, p.IncomeAndOutcome[1].Pn,
+			p.IncomeAndOutcome[0].Po, p.IncomeAndOutcome[1].Po, p.IncomeAndOutcome[0].Pp, p.IncomeAndOutcome[1].Pp,
+			p.IncomeAndOutcome[0].Pq, p.IncomeAndOutcome[1].Pq, p.IncomeAndOutcome[0].Pr, p.IncomeAndOutcome[1].Pr,
+			p.IncomeAndOutcome[0].Ps, p.IncomeAndOutcome[1].Ps, p.IncomeAndOutcome[0].Pt, p.IncomeAndOutcome[1].Pt,
+			p.IncomeAndOutcome[0].PTotal.Sub(p.IncomeAndOutcome[1].PTotal), p.Remark,
+		}
+		// concrete
+		left = append(left, right...)
+		data = append(data, left)
+	}
+
+	// 创建表头
+	for i, row := range data {
+		// 按行赋值
+		startCell, err := excelize.JoinCellName("A", i+1)
+		if err != nil {
+			return err, ""
+		}
+		if err = f.SetSheetRow(sheetName, startCell, &row); err != nil {
+			return err, ""
+		}
+	}
+	// 合并单元格
+	mergeCellRanges := [][]string{
+		{"A1", "A2"}, {"B1", "B2"}, {"C1", "C2"}, {"D1", "D2"}, {"E1", "E2"}, {"F1", "F2"}, {"G1", "G2"}, {"H1", "H2"}, {"I1", "I2"}, {"J1", "J2"}, {"K1", "K2"}, {"L1", "L2"}, {"M1", "M2"}, {"N1", "N2"}, {"O1", "O2"}, {"P1", "P2"},
+		{"Q1", "T1"}, {"U1", "X1"}, {"Y1", "AB1"}, {"AC1", "AF1"}, {"AG1", "AJ1"}, {"AK1", "AN1"}, {"AO1", "AR1"}, {"AS1", "AV1"}, {"AW1", "AZ1"},
+		{"BA1", "BB1"}, {"BC1", "BD1"}, {"BE1", "BF1"}, {"BG1", "BH1"},
+		{"BI1", "BJ1"}, {"BK1", "BL1"}, {"BM1", "BN1"}, {"BO1", "BP1"}, {"BQ1", "BR1"}, {"BS1", "BT1"}, {"BU1", "BV1"}, {"BW1", "BX1"}, {"BY1", "BZ1"}, {"CA1", "CB1"}, {"CC1", "CD1"}, {"CE1", "CF1"}, {"CG1", "CH1"}, {"CI1", "CJ1"},
+		{"CK1", "CK2"}, {"CL1", "CL2"},
+	}
+
+	for _, ranges := range mergeCellRanges {
+		if err = f.MergeCell(sheetName, ranges[0], ranges[1]); err != nil {
+			return err, ""
+		}
+	}
+	style, err := f.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			Horizontal:      "center",
+			Indent:          0,
+			JustifyLastLine: true,
+			ReadingOrder:    0,
+			RelativeIndent:  0,
+			ShrinkToFit:     true,
+			TextRotation:    0,
+			Vertical:        "center",
+			WrapText:        true,
+		},
+	})
+	if err != nil {
+		return err, ""
+	}
+	// CLn n是数据量
+	if err = f.SetCellStyle(sheetName, "A1", fmt.Sprintf("CL%v", len(projects)+2), style); err != nil {
+		return err, ""
+	}
+	if err = f.SetColWidth(sheetName, "A", "CL", 15); err != nil {
+
+	}
+	path = filepath.Join("./fileDir", "导出数据.xlsx")
+	if err = f.SaveAs(path); err != nil {
+		return err, ""
+	}
+	return nil, path
 }

@@ -193,3 +193,20 @@ export const changeProjectStatus = (data) => {
     data
   })
 }
+
+// @Tags Project
+// @Summary 导出Project列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query request.PageInfo true "导出Project列表"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /project/getProjectList [get]
+export const exportToExcel = (params) => {
+  return service({
+    url: '/project/exportToExcel',
+    method: 'get',
+    params,
+    responseType: 'blob' // 制定响应类型
+  })
+}

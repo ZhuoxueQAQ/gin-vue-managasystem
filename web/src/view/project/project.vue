@@ -586,6 +586,7 @@ import {
   deleteProjectByIds,
   getProjectList,
   changeProjectStatus,
+  exportToExcel,
 } from '@/api/project'
 import {
   findManageSystemSetting,
@@ -593,6 +594,7 @@ import {
 } from '@/api/manageSystemSetting.js'
 
 // 全量引入格式化工具 请按需保留
+import { saveAs } from '@/utils/download'
 import { formatTableVal } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
@@ -1081,7 +1083,15 @@ const updateManageSystemSettingFunc = async() => {
 }
 
 // 导出
-const handleExcelExport = () => {}
+const handleExcelExport = async() => {
+  const res = await exportToExcel({
+    searchInfo: JSON.stringify(searchInfo.value),
+  })
+  console.log(res)
+  if (res.status === 200) {
+    saveAs(res.data, '导出数据.xlsx')
+  }
+}
 
 // 创建收入流水
 const createIncomeStreamFunc = (row) => {

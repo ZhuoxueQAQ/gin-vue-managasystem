@@ -29,5 +29,6 @@ func (s *ProjectRouter) InitProjectRouter(Router *gin.RouterGroup) {
 		projectRouterWithoutRecord.GET("getProjectList", projectApi.GetProjectList)                     // 获取Project列表
 		projectRouterWithoutRecord.GET("getProjectFileRecordList", projectApi.GetProjectFileRecordList) // 获取项目附件
 		projectRouterWithoutRecord.GET("downloadFile", projectApi.DownloadFile)                         // 下载文件
+		projectRouterWithoutRecord.GET("exportToExcel", projectApi.ExportToExcel)                       // 导出培训项目数据
 	}
 }
