@@ -9,6 +9,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/shopspring/decimal"
+	"github.com/xuri/excelize/v2"
+	"path/filepath"
 )
 
 type OutcomeStreamService struct {
@@ -248,7 +250,7 @@ func (outcomeService *OutcomeStreamService) GetOutcomeStream(id uint) (err error
 
 // GetOutcomeStreamInfoList 分页获取OutcomeStream记录
 // Author [piexlmax](https://github.com/piexlmax)
-func (outcomeService *OutcomeStreamService) GetOutcomeStreamInfoList(info autoCodeReq.OutcomeStreamSearch) (err error, list interface{}, total int64) {
+func (outcomeService *OutcomeStreamService) GetOutcomeStreamInfoList(info autoCodeReq.OutcomeStreamSearch, isExport bool) (err error, list []autocode.OutcomeStream, total int64) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
@@ -291,6 +293,121 @@ func (outcomeService *OutcomeStreamService) GetOutcomeStreamInfoList(info autoCo
 	if err != nil {
 		return
 	}
-	err = db.Limit(limit).Offset(offset).Find(&outcomes).Error
+	if isExport {
+		err = db.Find(&outcomes).Error
+	} else {
+		err = db.Limit(limit).Offset(offset).Find(&outcomes).Error
+	}
 	return err, outcomes, total
+}
+
+func (outcomeService *OutcomeStreamService) ExportToExcel(incomes []autocode.OutcomeStream) (err error, path string) {
+	f := excelize.NewFile()
+	sheetName := "表"
+	f.SetSheetName("Sheet1", sheetName)
+	data := [][]interface{}{
+		{"培训项目", "项目分类", "支出项目码", "支出日期",
+			"委托方1", nil, nil, "委托方2", nil, nil, "委托方3", nil, nil,
+			"落地机构1", nil, nil, "落地机构2", nil, nil, "落地机构3", nil, nil,
+			"技术方1", nil, nil, "技术方2", nil, nil, "技术方3", nil, nil,
+			"专家课酬", "方案费", "网络研修教学费", "管理及工作人员劳务费", "考察、跟岗、线下指导费", "专家食宿", "专家及工作人员交通费", "学员伙食费", "学员住宿费", "学员交通费", "场租", "课程资源建设费(人员支出)", "课程资源建设费(购买)", "培训资料费、办公用品费、保险费、医药费及其他(含购买标书、中标服务费等)",
+			"备注"},
+		{nil, nil, nil, nil,
+			"名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额",
+			"名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额",
+			"名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额", "名称", "分成比例", "分成金额",
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil},
+	}
+	// 插入project data
+	for _, p := range incomes {
+		left := []interface{}{
+			p.ProjectName, p.Categories, p.OutcomeProjectCode, utils.FormatDate(p.CreatedDate, false),
+		}
+		// 委托方、等的最大个数
+		maxFormRowNum := 3
+		for _, c := range p.Client {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.Amount}
+			left = append(left, tmp...)
+		}
+		// 对小于最大长度的部分补充{nil, nil, nil}
+		for i := len(p.Client) * 3; i < maxFormRowNum*3; i++ {
+			left = append(left, nil)
+		}
+		for _, c := range p.LandingAgency {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.Amount}
+			left = append(left, tmp...)
+		}
+		for i := len(p.LandingAgency) * 3; i < maxFormRowNum*3; i++ {
+			left = append(left, nil)
+		}
+		for _, c := range p.Partner {
+			tmp := []interface{}{c.Name, c.Radio.String() + "%", c.Amount}
+			left = append(left, tmp...)
+		}
+		for i := len(p.Partner) * 3; i < maxFormRowNum*3; i++ {
+			left = append(left, nil)
+		}
+		right := []interface{}{
+			p.Pays.Pg, p.Pays.Ph, p.Pays.Pi, p.Pays.Pj, p.Pays.Pk, p.Pays.Pl, p.Pays.Pm, p.Pays.Pn, p.Pays.Po, p.Pays.Pp, p.Pays.Pq, p.Pays.Pr, p.Pays.Ps, p.Pays.Pt,
+			p.Remark,
+		}
+		// concrete
+		left = append(left, right...)
+		data = append(data, left)
+	}
+
+	// 创建表头
+	for i, row := range data {
+		// 按行赋值
+		startCell, err := excelize.JoinCellName("A", i+1)
+		if err != nil {
+			return err, ""
+		}
+		if err = f.SetSheetRow(sheetName, startCell, &row); err != nil {
+			return err, ""
+		}
+	}
+	// 合并单元格
+	mergeCellRanges := [][]string{
+		{"A1", "A2"}, {"B1", "B2"}, {"C1", "C2"}, {"D1", "D2"},
+		{"E1", "G1"}, {"H1", "J1"}, {"K1", "M1"}, {"N1", "P1"}, {"Q1", "S1"}, {"T1", "V1"}, {"W1", "Y1"}, {"Z1", "AB1"}, {"AC1", "AE1"},
+		{"AF1", "AF2"}, {"AG1", "AG2"}, {"AH1", "AH2"}, {"AI1", "AI2"}, {"AJ1", "AJ2"}, {"AK1", "AK2"}, {"AL1", "AL2"}, {"AM1", "AM2"}, {"AN1", "AN2"}, {"AO1", "AO2"}, {"AP1", "AP2"}, {"AQ1", "AQ2"}, {"AR1", "AR2"}, {"AS1", "AS2"},
+		{"AT1", "AT2"},
+	}
+
+	for _, ranges := range mergeCellRanges {
+		if err = f.MergeCell(sheetName, ranges[0], ranges[1]); err != nil {
+			return err, ""
+		}
+	}
+
+	style, err := f.NewStyle(&excelize.Style{
+		Alignment: &excelize.Alignment{
+			Horizontal:      "center",
+			Indent:          0,
+			JustifyLastLine: true,
+			ReadingOrder:    0,
+			RelativeIndent:  0,
+			ShrinkToFit:     true,
+			TextRotation:    0,
+			Vertical:        "center",
+			WrapText:        true,
+		},
+	})
+	if err != nil {
+		return err, ""
+	}
+	// CLn n是数据量
+	if err = f.SetCellStyle(sheetName, "A1", fmt.Sprintf("CL%v", len(incomes)+2), style); err != nil {
+		return err, ""
+	}
+	if err = f.SetColWidth(sheetName, "A", "BL", 15); err != nil {
+
+	}
+	path = filepath.Join("./fileDir", "导出数据.xlsx")
+	if err = f.SaveAs(path); err != nil {
+		return err, ""
+	}
+	return nil, path
 }

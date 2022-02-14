@@ -95,3 +95,20 @@ export const getOutcomeStreamList = (params) => {
     params
   })
 }
+
+// @Tags IncomeStream
+// @Summary 导出支出流水
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query request.PageInfo true "导出收入流水"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /outcome/exportToExcel [get]
+export const exportToExcel = (params) => {
+  return service({
+    url: '/outcome/exportToExcel',
+    method: 'get',
+    params,
+    responseType: 'blob' // 制定响应类型
+  })
+}

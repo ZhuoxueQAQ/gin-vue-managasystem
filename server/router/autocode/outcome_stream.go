@@ -15,13 +15,14 @@ func (s *OutcomeStreamRouter) InitOutcomeStreamRouter(Router *gin.RouterGroup) {
 	outcomeRouterWithoutRecord := Router.Group("outcome")
 	var outcomeApi = v1.ApiGroupApp.AutoCodeApiGroup.OutcomeStreamApi
 	{
-		outcomeRouter.POST("createOutcomeStream", outcomeApi.CreateOutcomeStream)   // 新建OutcomeStream
-		outcomeRouter.DELETE("deleteOutcomeStream", outcomeApi.DeleteOutcomeStream) // 删除OutcomeStream
+		outcomeRouter.POST("createOutcomeStream", outcomeApi.CreateOutcomeStream)             // 新建OutcomeStream
+		outcomeRouter.DELETE("deleteOutcomeStream", outcomeApi.DeleteOutcomeStream)           // 删除OutcomeStream
 		outcomeRouter.DELETE("deleteOutcomeStreamByIds", outcomeApi.DeleteOutcomeStreamByIds) // 批量删除OutcomeStream
-		outcomeRouter.PUT("updateOutcomeStream", outcomeApi.UpdateOutcomeStream)    // 更新OutcomeStream
+		outcomeRouter.PUT("updateOutcomeStream", outcomeApi.UpdateOutcomeStream)              // 更新OutcomeStream
 	}
 	{
-		outcomeRouterWithoutRecord.GET("findOutcomeStream", outcomeApi.FindOutcomeStream)        // 根据ID获取OutcomeStream
-		outcomeRouterWithoutRecord.GET("getOutcomeStreamList", outcomeApi.GetOutcomeStreamList)  // 获取OutcomeStream列表
+		outcomeRouterWithoutRecord.GET("findOutcomeStream", outcomeApi.FindOutcomeStream)       // 根据ID获取OutcomeStream
+		outcomeRouterWithoutRecord.GET("getOutcomeStreamList", outcomeApi.GetOutcomeStreamList) // 获取OutcomeStream列表
+		outcomeRouterWithoutRecord.GET("exportToExcel", outcomeApi.ExportToExcel)               // 导出支出流水
 	}
 }

@@ -11,12 +11,12 @@ import (
 // 如果含有time.Time 请自行import time包
 type IncomeStream struct {
 	global.GVA_MODEL
-	ProjectId    *int `json:"projectId" form:"projectId" gorm:"column:project_id;comment:所属项目ID;"`
-	InvoiceCount *int `json:"invoiceCount" form:"invoiceCount" gorm:"column:invoice_count;comment:发票数量;"`
+	ProjectId    int `json:"projectId" form:"projectId" gorm:"column:project_id;comment:所属项目ID;"`
+	InvoiceCount int `json:"invoiceCount" form:"invoiceCount" gorm:"column:invoice_count;comment:发票数量;"`
 
-	CreatedDate      *time.Time `json:"createdDate" form:"createdDate" gorm:"column:created_date;comment:入账日期;"`
-	InvoiceIssueDate *time.Time `json:"invoiceIssueDate" form:"invoiceIssueDate" gorm:"column:invoice_issue_date;comment:发票开出日期;"`
-	SplitAmountDate  *time.Time `json:"splitAmountDate" form:"splitAmountDate" gorm:"column:split_amount_date;comment:分账日期;"`
+	CreatedDate      time.Time `json:"createdDate" form:"createdDate" gorm:"column:created_date;comment:入账日期;"`
+	InvoiceIssueDate time.Time `json:"invoiceIssueDate" form:"invoiceIssueDate" gorm:"column:invoice_issue_date;comment:发票开出日期;"`
+	SplitAmountDate  time.Time `json:"splitAmountDate" form:"splitAmountDate" gorm:"column:split_amount_date;comment:分账日期;"`
 
 	IncomeAmount  decimal.Decimal `json:"incomeAmount" form:"incomeAmount" gorm:"column:income_amount;comment:入账金额;"`
 	InvoiceAmount decimal.Decimal `json:"invoiceAmount" form:"invoiceAmount" gorm:"column:invoice_amount;comment:发票金额;"`

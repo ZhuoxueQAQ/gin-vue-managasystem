@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/url"
+	"os"
 )
 
 type OutcomeStreamApi struct {
@@ -138,7 +139,7 @@ func (outcomeApi *OutcomeStreamApi) GetOutcomeStreamList(c *gin.Context) {
 		response.FailWithMessage("查询JSON参数解析失败", c)
 		return
 	}
-	if err, list, total := outcomeService.GetOutcomeStreamInfoList(info); err != nil {
+	if err, list, total := outcomeService.GetOutcomeStreamInfoList(info, false); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
 	} else {
@@ -149,4 +150,48 @@ func (outcomeApi *OutcomeStreamApi) GetOutcomeStreamList(c *gin.Context) {
 			PageSize: info.PageSize,
 		}, "获取成功", c)
 	}
+}
+
+// ExportToExcel 导出已筛选的支出流水数据
+// @Tags Project
+// @Summary 导出已筛选的project数据
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data query autocodeReq.ProjectSearch true "导出已筛选的project数据"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /project/ExportToExcel [get]
+func (outcomeApi *OutcomeStreamApi) ExportToExcel(c *gin.Context) {
+	var info autocodeReq.OutcomeStreamSearch
+	// 从get请求中获取searchInfo，解码，然后转成json对象，绑定到info结构体
+	searchInfo, _ := url.QueryUnescape(c.Query("searchInfo"))
+	// 如果解码失败，直接返回
+	if err := json.Unmarshal([]byte(searchInfo), &info); err != nil {
+		global.GVA_LOG.Error("查询JSON参数解析失败!", zap.Error(err))
+		response.FailWithMessage("查询JSON参数解析失败", c)
+		return
+	}
+
+	var path string
+
+	if err, list, _ := outcomeService.GetOutcomeStreamInfoList(info, true); err != nil {
+		global.GVA_LOG.Error("获取收入流水列表失败!", zap.Error(err))
+		response.FailWithMessage("获取收入流水列表失败", c)
+	} else {
+		if err, path = outcomeService.ExportToExcel(list); err != nil {
+			global.GVA_LOG.Error("生成excel文件失败!", zap.Error(err))
+			response.FailWithMessage("生成excel文件失败", c)
+		}
+		//获取文件类型对应的http ContentType 类型
+		c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+		c.Header("Content-Disposition", "导出数据.xlsx")
+		c.Header("Content-Transfer-Encoding", "binary")
+		c.File(path)
+	}
+
+	defer func() {
+		if err := os.Remove(path); err != nil {
+			global.GVA_LOG.Error("移除临时生成的文件失败!", zap.Error(err))
+		}
+	}()
 }

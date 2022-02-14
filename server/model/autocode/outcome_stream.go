@@ -10,8 +10,8 @@ import (
 // 如果含有time.Time 请自行import time包
 type OutcomeStream struct {
 	global.GVA_MODEL
-	ProjectId   *int       `json:"projectId" form:"projectId" gorm:"column:project_id;comment:所属项目Id;"`
-	CreatedDate *time.Time `json:"createdDate" form:"createdDate" gorm:"column:created_date;comment:支出日期;"`
+	ProjectId   int       `json:"projectId" form:"projectId" gorm:"column:project_id;comment:所属项目Id;"`
+	CreatedDate time.Time `json:"createdDate" form:"createdDate" gorm:"column:created_date;comment:支出日期;"`
 
 	Categories         string `json:"categories" form:"categories" gorm:"column:categories;comment:所属项目分类;size:50;"`
 	ProjectName        string `json:"projectName" form:"projectName" gorm:"column:project_name;comment:项目名称;size:200;"`

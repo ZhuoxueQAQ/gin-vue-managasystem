@@ -23,5 +23,6 @@ func (s *IncomeStreamRouter) InitIncomeStreamRouter(Router *gin.RouterGroup) {
 	{
 		IncomeRouterWithoutRecord.GET("findIncomeStream", IncomeApi.FindIncomeStream)       // 根据ID获取IncomeStream
 		IncomeRouterWithoutRecord.GET("getIncomeStreamList", IncomeApi.GetIncomeStreamList) // 获取IncomeStream列表
+		IncomeRouterWithoutRecord.GET("exportToExcel", IncomeApi.ExportToExcel)             // 导出incomeStreams
 	}
 }
